@@ -10,14 +10,13 @@ class AdminUserSeeder extends Seeder
 {
     public function run(): void
     {
-        $admin = User::updateOrCreate(
+        User::updateOrCreate(
             ['email' => 'admin@pjud.cl'],
             [
-                'name' => 'Admin',
+                'name' => 'Super Admin',
                 'password' => Hash::make('12345678'),
+                'activo' => true,
             ]
         );
-
-        $admin->assignRole('Administrador');
     }
 }

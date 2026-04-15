@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
@@ -16,17 +17,45 @@ class RolePermissionSeeder extends Seeder
         $permissions = [
             'ver dashboard',
             'gestionar usuarios',
-            'gestionar roles',
+            'ver usuarios',
+            'crear usuarios',
+            'editar usuarios',
+            'eliminar usuarios',
+            'asignar roles',
         ];
 
         foreach ($permissions as $permission) {
             Permission::firstOrCreate(['name' => $permission]);
         }
 
-        $admin = Role::firstOrCreate(['name' => 'Administrador']);
-        $usuario = Role::firstOrCreate(['name' => 'Usuario']);
+        $superAdmin = Role::firstOrCreate(['name' => 'Super Admin']);
+        $administradorZonal = Role::firstOrCreate(['name' => 'Administrador Zonal']);
+        $operador = Role::firstOrCreate(['name' => 'Operador']);
+        $consulta = Role::firstOrCreate(['name' => 'Consulta']);
 
-        $admin->givePermissionTo($permissions);
-        $usuario->givePermissionTo(['ver dashboard']);
+        $superAdmin->syncPermissions(Permission::all());
+
+        $administradorZonal->syncPermissions([
+            'ver dashboard',
+            'gestionar usuarios',
+            'ver usuarios',
+            'crear usuarios',
+            'editar usuarios',
+            'asignar roles',
+        ]);
+
+        $operador->syncPermissions([
+            'ver dashboard',
+        ]);
+
+        $consulta->syncPermissions([
+            'ver dashboard',
+        ]);
+
+        $user = User::where('email', 'admin@pjud.cl')->first();
+
+        if ($user) {
+            $user->syncRoles(['Super Admin']);
+        }
     }
 }

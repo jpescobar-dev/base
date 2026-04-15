@@ -1,6 +1,9 @@
 .layout-spacing {
     padding-bottom: 25px;
 }
+.layout-top-spacing {
+    margin-top: 15px;
+}
 .widget {
     position: relative;
     padding: 20px;

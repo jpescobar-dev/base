@@ -1,6 +1,9 @@
 .layout-spacing {
     padding-bottom: 25px;
 }
+.layout-top-spacing {
+    margin-top: 15px;
+}
 .widget {
     position: relative;
     padding: 0;
@@ -8,6 +11,9 @@
     border: none;
     border: 1px solid #e0e6ed;
     box-shadow: 0 0 40px 0 rgba(94,92,154,.06);
+}
+.footer-wrapper {
+    padding: 10px 0 10px 0;
 }
 
 /*

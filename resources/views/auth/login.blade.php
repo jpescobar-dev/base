@@ -10,7 +10,7 @@
                     <h1 class="">
                         Iniciar sesión en
                         <a href="{{ url('/') }}">
-                            <span class="brand-name">{{ config('app.name', 'Laravel') }}</span>
+                            <span class="brand-name">{{ config('app.name', 'Capj') }}</span>
                         </a>
                     </h1>
 
