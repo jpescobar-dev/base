@@ -1,0 +1,4 @@
+<a href="{{ route('contractual.revisiones.snapshots.export-word', [$snapshot->revision_contractual_id, $snapshot]) }}"
+   class="btn btn-outline-primary">
+    Exportar Word
+</a>

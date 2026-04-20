@@ -4,7 +4,7 @@ namespace App\Services\Contractual;
 
 use App\Models\RevisionContractual;
 use Illuminate\Support\Facades\Http;
-use App\Services\Contractual\PromptRevisionContractualBuilderService;
+use Illuminate\Support\Facades\Log;
 
 class OpenAIRevisionContractualService
 {
@@ -12,12 +12,18 @@ class OpenAIRevisionContractualService
     {
         $prompt = app(PromptRevisionContractualBuilderService::class)->build($revision);
 
+        Log::info('Tamaño prompt contractual', [
+            'revision_id' => $revision->id,
+            'chars' => mb_strlen($prompt),
+        ]);
+
         $response = Http::withToken(config('services.openai.key'))
             ->baseUrl(config('services.openai.base_url'))
             ->withOptions([
                 'verify' => false, // temporal en local
             ])
-            ->timeout(120)
+            ->connectTimeout(30)
+            ->timeout(300)
             ->post('/responses', [
                 'model' => config('services.openai.model'),
                 'input' => $prompt,

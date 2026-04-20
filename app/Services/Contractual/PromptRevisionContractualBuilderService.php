@@ -45,22 +45,28 @@ class PromptRevisionContractualBuilderService
 
     protected function buildDatosRevision(RevisionContractual $revision): string
     {
-        $revision->load('documentos');
+        $revision->load(['documentos' => function ($q) {
+            $q->where('tiene_texto_extraible', true)
+              ->orderByDesc('id')
+              ->limit(4);
+        }]);
 
         $documentos = $revision->documentos->map(function ($doc) {
-            $tipo = $doc->tipo_documento ?: 'SIN TIPO';
+            $tipo = $this->normalizarTipoDocumento(
+                $doc->tipo_documento,
+                $doc->nombre_original
+            );
+
             $estadoExtraccion = $doc->extraccion_estado ?: 'PENDIENTE';
 
             if ($doc->tiene_texto_extraible && !empty($doc->texto_extraido)) {
                 $texto = trim($doc->texto_extraido);
-
-                // Limitar tamaño por documento para no reventar el prompt
-                $texto = mb_substr($texto, 0, 15000);
+                $texto = mb_substr($texto, 0, 8000);
 
                 return <<<TXT
 ### DOCUMENTO: {$doc->nombre_original}
-Tipo: {$tipo}
-Estado extracción: {$estadoExtraccion}
+TIPO_DOCUMENTO: {$tipo}
+ESTADO_EXTRACCION: {$estadoExtraccion}
 
 {$texto}
 TXT;
@@ -68,8 +74,8 @@ TXT;
 
             return <<<TXT
 ### DOCUMENTO: {$doc->nombre_original}
-Tipo: {$tipo}
-Estado extracción: {$estadoExtraccion}
+TIPO_DOCUMENTO: {$tipo}
+ESTADO_EXTRACCION: {$estadoExtraccion}
 
 No fue posible extraer texto legible del documento.
 TXT;
@@ -94,8 +100,35 @@ TXT;
 
 ## Instrucción final
 Realiza la revisión contractual preliminar aplicando estrictamente las reglas anteriores.
+Aplica jerarquía documental cuando existan contradicciones.
 Trabaja solo con la información disponible.
 Si faltan antecedentes, indícalo expresamente.
 TXT;
+    }
+
+    protected function normalizarTipoDocumento(?string $tipoDocumento, ?string $nombreOriginal): string
+    {
+        $base = mb_strtolower(trim(($tipoDocumento ?: '') . ' ' . ($nombreOriginal ?: '')));
+
+        return match (true) {
+            str_contains($base, 'contrato') => 'CONTRATO',
+            str_contains($base, 'resolución de adjudicación'),
+            str_contains($base, 'resolucion de adjudicacion'),
+            str_contains($base, 'adjudicación'),
+            str_contains($base, 'adjudicacion') => 'RESOLUCION_ADJUDICACION',
+            str_contains($base, 'bases administrativas especiales') => 'BASES_ADMINISTRATIVAS_ESPECIALES',
+            str_contains($base, 'bases técnicas'),
+            str_contains($base, 'bases tecnicas') => 'BASES_TECNICAS',
+            str_contains($base, 'bases administrativas generales'),
+            str_contains($base, 'bases administrativas') => 'BASES_ADMINISTRATIVAS_GENERALES',
+            str_contains($base, 'oferta técnica'),
+            str_contains($base, 'oferta tecnica') => 'OFERTA_TECNICA',
+            str_contains($base, 'oferta económica'),
+            str_contains($base, 'oferta economica'),
+            str_contains($base, 'formulario economico') => 'OFERTA_ECONOMICA',
+            str_contains($base, 'garantía'),
+            str_contains($base, 'garantia') => 'GARANTIA',
+            default => 'OTRO',
+        };
     }
 }

@@ -1,0 +1,11 @@
+use App\Http\Controllers\Contractual\ExportRevisionContractualController;
+
+Route::get(
+    'contractual/revisiones/{revision}/snapshots/{snapshot}/export-word',
+    [ExportRevisionContractualController::class, 'snapshot']
+)->name('contractual.revisiones.snapshots.export-word');
+
+Route::get(
+    'contractual/revisiones/{revision}/snapshots/compare/{snapshot1}/{snapshot2}/export-word',
+    [ExportRevisionContractualController::class, 'compare']
+)->name('contractual.revisiones.snapshots.compare.export-word');

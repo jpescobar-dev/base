@@ -44,7 +44,6 @@ class AnalisisRevisionContractualController extends Controller
                 }
 
                 $clean = stripslashes($clean);
-
                 $decoded = json_decode($clean, true);
             }
         }
@@ -69,46 +68,83 @@ class AnalisisRevisionContractualController extends Controller
             SnapshotRevisionContractual::where('revision_contractual_id', $revision->id)
                 ->update(['es_actual' => false]);
 
-            $resumenTexto = $this->buildResumenTexto($jsonFinal);
-
             $snapshot = SnapshotRevisionContractual::create([
                 'revision_contractual_id' => $revision->id,
                 'numero_version' => $nuevaVersion,
                 'tipo_ejecucion' => 'openai',
-                'resumen' => $resumenTexto,
+                'resumen' => $this->buildResumenTexto($jsonFinal),
                 'json_resultado' => $jsonFinal,
                 'es_actual' => true,
                 'user_id' => auth()->id(),
             ]);
 
             foreach (($jsonFinal['hallazgos'] ?? []) as $hallazgo) {
+                $titulo = $hallazgo['titulo']
+                    ?? $hallazgo['clausula']
+                    ?? $hallazgo['categoria']
+                    ?? 'Hallazgo sin título';
+
+                $tipoRiesgo = $hallazgo['tipo_riesgo']
+                    ?? $hallazgo['categoria']
+                    ?? null;
+
+                $criticidad = $hallazgo['criticidad']
+                    ?? $hallazgo['riesgo']
+                    ?? null;
+
+                $descripcion = $hallazgo['descripcion']
+                    ?? $hallazgo['observacion']
+                    ?? null;
+
+                $recomendacion = $hallazgo['recomendacion']
+                    ?? null;
+
                 HallazgoRevisionContractual::create([
                     'snapshot_revision_contractual_id' => $snapshot->id,
                     'estado_id' => null,
-                    'titulo' => $hallazgo['titulo'] ?? 'Hallazgo sin título',
-                    'tipo_hallazgo' => $this->mapTipoHallazgo($hallazgo['criticidad'] ?? null),
-                    'tipo_riesgo' => $hallazgo['tipo_riesgo'] ?? null,
-                    'nivel_criticidad' => $hallazgo['criticidad'] ?? null,
+                    'titulo' => $titulo,
+                    'tipo_hallazgo' => $this->mapTipoHallazgo($criticidad),
+                    'tipo_riesgo' => $tipoRiesgo,
+                    'nivel_criticidad' => $criticidad,
                     'hecho_acreditado' => null,
-                    'observacion' => $hallazgo['descripcion'] ?? null,
+                    'observacion' => $descripcion,
                     'fundamento_documental' => null,
                     'consecuencia_posible' => null,
-                    'recomendacion' => $hallazgo['recomendacion'] ?? null,
+                    'recomendacion' => $recomendacion,
                     'user_id' => auth()->id(),
                 ]);
             }
 
             $orden = 1;
-            foreach (($jsonFinal['checklist'] ?? []) as $item) {
-                ChecklistRevisionContractual::create([
-                    'snapshot_revision_contractual_id' => $snapshot->id,
-                    'item' => $item['item'] ?? 'Ítem sin nombre',
-                    'estado_item' => $this->mapEstadoChecklist($item['estado'] ?? null),
-                    'observacion' => $item['observacion'] ?? null,
-                    'referencia_documental' => null,
-                    'orden' => $orden++,
-                    'user_id' => auth()->id(),
-                ]);
+
+            if (isset($jsonFinal['checklist']['existencia']) || isset($jsonFinal['checklist']['coherencia']) || isset($jsonFinal['checklist']['cumplimiento'])) {
+                foreach (['existencia', 'coherencia', 'cumplimiento'] as $capa) {
+                    foreach (($jsonFinal['checklist'][$capa] ?? []) as $item) {
+                        ChecklistRevisionContractual::create([
+                            'snapshot_revision_contractual_id' => $snapshot->id,
+                            'item' => $item['item'] ?? 'Ítem sin nombre',
+                            'estado_item' => $this->mapEstadoChecklist($item['estado'] ?? null),
+                            'tipo_checklist' => $capa,
+                            'observacion' => $item['observacion'] ?? null,
+                            'referencia_documental' => null,
+                            'orden' => $orden++,
+                            'user_id' => auth()->id(),
+                        ]);
+                    }
+                }
+            } else {
+                foreach (($jsonFinal['checklist'] ?? []) as $item) {
+                    ChecklistRevisionContractual::create([
+                        'snapshot_revision_contractual_id' => $snapshot->id,
+                        'item' => $item['item'] ?? 'Ítem sin nombre',
+                        'estado_item' => $this->mapEstadoChecklist($item['estado'] ?? null),
+                        'tipo_checklist' => null,
+                        'observacion' => $item['observacion'] ?? null,
+                        'referencia_documental' => null,
+                        'orden' => $orden++,
+                        'user_id' => auth()->id(),
+                    ]);
+                }
             }
 
             DB::commit();
@@ -118,13 +154,11 @@ class AnalisisRevisionContractualController extends Controller
                 'revision_id' => $revision->id,
                 'numero_version' => $snapshot->numero_version,
                 'hallazgos_count' => count($jsonFinal['hallazgos'] ?? []),
-                'checklist_count' => count($jsonFinal['checklist'] ?? []),
             ]);
 
             return redirect()
                 ->route('contractual.revisiones.snapshots.show', [$revision, $snapshot])
                 ->with('success', 'Análisis ejecutado y registros generados correctamente.');
-
         } catch (\Throwable $e) {
             DB::rollBack();
 
@@ -140,7 +174,6 @@ class AnalisisRevisionContractualController extends Controller
     protected function buildResumenTexto(array $jsonFinal): string
     {
         $resumen = $jsonFinal['resumen'] ?? [];
-
         $partes = [];
 
         if (!empty($resumen['tipo_contrato'])) {

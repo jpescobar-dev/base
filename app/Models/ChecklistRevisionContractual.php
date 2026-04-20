@@ -13,6 +13,7 @@ class ChecklistRevisionContractual extends Model
         'snapshot_revision_contractual_id',
         'item',
         'estado_item',
+        'tipo_checklist',
         'observacion',
         'referencia_documental',
         'orden',
