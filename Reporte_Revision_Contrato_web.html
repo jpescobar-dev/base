@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Informe final y checklist interactivo - Calderas Aysén</title>
+<style>
+    :root{
+        --bg:#f4f6f8; --card:#ffffff; --text:#1f2937; --muted:#6b7280; --line:#d1d5db;
+        --head:#0f172a; --yellow:#fef3c7; --red:#fee2e2; --gray:#f3f4f6; --accent:#1d4ed8;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);line-height:1.45}
+    .topbar{position:sticky;top:0;z-index:50;background:#0f172a;color:#fff;padding:12px 18px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+    .topbar-inner{max-width:1280px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+    .title{font-weight:bold;font-size:18px}
+    .top-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    button{border:1px solid #cbd5e1;background:#fff;color:#111827;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:14px}
+    button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+    .wrapper{max-width:1280px;margin:20px auto;display:grid;grid-template-columns:300px 1fr;gap:20px;padding:0 16px 24px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.04)}
+    .sidebar .card{position:sticky;top:74px;padding:16px}
+    .content .card{padding:28px 30px}
+    h1,h2,h3,h4{color:var(--head);margin-top:0}
+    h1{font-size:28px;text-align:center;margin-bottom:6px}
+    h2{font-size:22px;margin-top:28px;padding-bottom:6px;border-bottom:2px solid var(--line)}
+    h3{font-size:18px;margin-top:22px}
+    .sub{text-align:center;color:var(--muted);margin-bottom:18px}
+    .meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 14px;margin:20px 0 14px}
+    .meta .box{background:var(--gray);border:1px solid var(--line);padding:10px 12px;border-radius:8px}
+    .risk{display:inline-block;padding:6px 12px;border-radius:999px;font-weight:bold;background:var(--yellow);border:1px solid #e5c15d}
+    .mini{font-size:13px;color:var(--muted)}
+    table{width:100%;border-collapse:collapse;margin:12px 0 22px;font-size:14px;table-layout:fixed}
+    th,td{border:1px solid var(--line);padding:8px 10px;vertical-align:top;word-wrap:break-word}
+    th{background:#eef2f7;text-align:left}
+    .tag-high{background:var(--red);font-weight:bold}
+    .tag-med{background:var(--yellow);font-weight:bold}
+    .hallazgo{border:1px solid var(--line);border-left:6px solid #dc2626;background:#fff;border-radius:8px;padding:14px 16px;margin:16px 0}
+    .navlist{list-style:none;padding:0;margin:0 0 16px 0}
+    .navlist li{margin:0 0 6px 0}
+    .navlist a{display:block;text-decoration:none;color:#111827;padding:8px 10px;border-radius:8px;background:#f8fafc;border:1px solid #e5e7eb}
+    .navlist a:hover{background:#eff6ff}
+    .filter-box{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+    .filter-box label{display:block;margin:8px 0 6px;font-size:14px;font-weight:bold}
+    input[type="search"],select{width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;background:#fff}
+    .status-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+    .status-summary div{border:1px solid var(--line);border-radius:8px;padding:10px;background:#fafafa;font-size:13px}
+    .editable{width:100%;min-height:44px;border:none;background:transparent;resize:vertical;font-family:inherit;font-size:14px;color:inherit}
+    .checkbox-cell{text-align:center;font-size:18px}
+    .section-note{background:#eff6ff;border:1px solid #bfdbfe;padding:12px 14px;border-radius:8px;margin:10px 0 18px}
+    .export-note{font-size:12px;color:#94a3b8;margin-top:8px}
+    .hidden-row{display:none}
+    @media (max-width:980px){.wrapper{grid-template-columns:1fr}.sidebar .card{position:static}.meta{grid-template-columns:1fr}}
+    @media print{.topbar,.sidebar{display:none !important}.wrapper{display:block;max-width:none;padding:0}.content .card{box-shadow:none;border:none;padding:0}body{background:#fff}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="title">Informe final y checklist interactivo · Calderas Aysén</div>
+    <div class="top-actions">
+      <button class="primary" onclick="window.print()">Imprimir / Guardar PDF</button>
+      <button onclick="expandAll()">Expandir todo</button>
+      <button onclick="collapseHallazgos()">Colapsar hallazgos</button>
+      <button onclick="resetChecks()">Restaurar checks iniciales</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrapper">
+  <aside class="sidebar">
+    <div class="card">
+      <h3 style="margin-top:0;">Navegación</h3>
+      <ul class="navlist">
+        <li><a href="#ficha">1. Ficha ejecutiva</a></li>
+        <li><a href="#semaforo">2. Semáforo</a></li>
+        <li><a href="#resumen">3. Resumen</a></li>
+        <li><a href="#checklist">4. Checklist</a></li>
+        <li><a href="#hallazgos">5. Hallazgos críticos</a></li>
+        <li><a href="#acciones">6. Acciones correctivas</a></li>
+        <li><a href="#cierre">7. Cierre obligatorio</a></li>
+      </ul>
+      <div class="filter-box">
+        <label for="searchBox">Buscar en checklist</label>
+        <input type="search" id="searchBox" placeholder="Buscar texto...">
+        <label for="statusFilter">Filtrar por estado</label>
+        <select id="statusFilter">
+          <option value="all">Todos</option>
+          <option value="si">Marcados Sí</option>
+          <option value="no">Marcados No / N.A.</option>
+          <option value="pendiente">Sin marcar</option>
+        </select>
+        <div class="status-summary">
+          <div><strong id="countSi">0</strong><br>Ítems Sí</div>
+          <div><strong id="countNo">0</strong><br>Ítems No / N.A.</div>
+          <div><strong id="countPend">0</strong><br>Ítems sin marcar</div>
+          <div><strong id="countVisible">0</strong><br>Ítems visibles</div>
+        </div>
+        <div class="export-note">Los checks iniciales ya vienen marcados según el análisis previo. Puedes modificarlos manualmente.</div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="content">
+    <div class="card">
+      <h1>INFORME PRELIMINAR DE REVISIÓN CONTRACTUAL</h1>
+      <div class="sub">y checklist de auditoría manual interactivo</div>
+
+      <div class="meta">
+        <div class="box"><strong>Proceso / ID:</strong> 2182-11-LE25</div>
+        <div class="box"><strong>Contrato ID:</strong> 23398</div>
+        <div class="box"><strong>Entidad contratante:</strong> Corporación Administrativa del Poder Judicial</div>
+        <div class="box"><strong>Proveedor:</strong> Marcial Roberto Moreno Gatica / Marcial Moreno Gatica</div>
+        <div class="box"><strong>Objeto:</strong> Mantención preventiva y correctiva de calderas de calefacción</div>
+        <div class="box"><strong>Plazo base:</strong> 36 meses</div>
+        <div class="box"><strong>Inicio:</strong> 04-03-2026</div>
+        <div class="box"><strong>Monto preventivo anual:</strong> 171,36 UF IVA incluido</div>
+        <div class="box"><strong>Monto total preventivo 36 meses:</strong> 514,08 UF IVA incluido</div>
+        <div class="box"><strong>Garantía de fiel cumplimiento:</strong> UF 21,6</div>
+      </div>
+
+      <p><strong>Estado del expediente:</strong> Parcialmente completo</p>
+      <p><strong>Nivel de riesgo preliminar:</strong> <span class="risk">MEDIO - ALTO</span></p>
+
+      <section id="ficha">
+        <h2>1. Ficha ejecutiva</h2>
+        <table>
+          <tr><th style="width:35%">Campo</th><th>Dato</th></tr>
+          <tr><td>Proceso / ID</td><td>2182-11-LE25</td></tr>
+          <tr><td>Contrato ID</td><td>23398</td></tr>
+          <tr><td>Objeto</td><td>Mantención preventiva y correctiva de calderas de calefacción</td></tr>
+          <tr><td>Plazo base</td><td>36 meses</td></tr>
+          <tr><td>Proveedor</td><td>Marcial Roberto Moreno Gatica</td></tr>
+          <tr><td>Inicio</td><td>04-03-2026</td></tr>
+          <tr><td>Monto preventivo anual</td><td>171,36 UF IVA incluido</td></tr>
+          <tr><td>Monto total preventivo 36 meses</td><td>514,08 UF IVA incluido</td></tr>
+          <tr><td>Garantía de fiel cumplimiento</td><td>UF 21,6</td></tr>
+          <tr><td>Vencimiento garantía</td><td>04-09-2029</td></tr>
+          <tr><td>Estado del expediente</td><td>Expediente relevante pero incompleto para trazabilidad integral</td></tr>
+          <tr><td>Nivel de riesgo preliminar</td><td>MEDIO - ALTO</td></tr>
+        </table>
+      </section>
+
+      <section id="semaforo">
+        <h2>2. Semáforo de riesgo preliminar</h2>
+        <table>
+          <tr><th style="width:28%">Categoría</th><th style="width:12%">Nivel</th><th>Observación</th></tr>
+          <tr><td>Coherencia documental</td><td class="tag-high">ALTO</td><td>Existen inconsistencias relevantes en plazo, individualización y estructuración económica.</td></tr>
+          <tr><td>Integridad del expediente</td><td class="tag-high">ALTO</td><td>Faltan antecedentes clave para trazabilidad completa de adjudicación y ejecución.</td></tr>
+          <tr><td>Riesgo financiero / de control</td><td class="tag-med">MEDIO</td><td>La base económica parece compatible, pero requiere consolidación formal.</td></tr>
+          <tr><td>Riesgo de ejecución</td><td class="tag-med">MEDIO</td><td>No hay antecedentes suficientes para validar cumplimiento operativo del contrato.</td></tr>
+          <tr><td>Riesgo jurídico-administrativo</td><td class="tag-med">MEDIO</td><td>No se aprecia nulidad evidente con lo revisado, pero sí debilidades de respaldo y consistencia.</td></tr>
+        </table>
+      </section>
+
+      <section id="resumen">
+        <h2>3. Resumen ejecutivo</h2>
+        <p>Se revisó preliminarmente el expediente documental aportado por el usuario correspondiente al proceso de contratación “Servicio de mantención preventiva y correctiva de calderas de calefacción de tribunales de la Jurisdicción de Aysén”, ID 2182-11-LE25.</p>
+        <div class="section-note"><strong>Documentos revisados:</strong> resolución exenta de llamado a licitación, bases administrativas generales, bases administrativas especiales, bases técnicas, reglamento de prevención de riesgos para contratistas, anexo económico preventivo, anexo económico correctivo, boleta de garantía, contrato suscrito, ficha de adjudicación e informe de evaluación.</div>
+        <p><strong>Principales conclusiones preliminares:</strong></p>
+        <ul>
+          <li>Existe una estructura contractual materialmente formada.</li>
+          <li>El expediente contiene documentación relevante, pero no íntegra.</li>
+          <li>Se acreditan inconsistencias documentales que deben ser corregidas.</li>
+          <li>No es posible acreditar cumplimiento efectivo de ejecución solo con esta carpeta documental.</li>
+        </ul>
+      </section>
+
+      <section id="checklist">
+        <h2>4. Checklist de revisión manual del expediente</h2>
+        <p class="mini">Se corrigieron los checks iniciales para que queden marcados según el análisis previo y el formato que subiste.</p>
+
+        <h3>4.1. Licitación y adjudicación</h3>
+        <table class="check-table">
+          <tr><th style="width:5%">N°</th><th style="width:28%">Ítem a revisar</th><th style="width:7%">Sí</th><th style="width:9%">No / N.A.</th><th style="width:18%">Evidencia / folio</th><th>Observación</th></tr>
+          <tr class="check-row"><td>1</td><td>Resolución que aprueba bases y llama a licitación</td><td class="checkbox-cell"><input type="radio" name="r1" class="si" checked></td><td class="checkbox-cell"><input type="radio" name="r1" class="no"></td><td>01. Rex llamado a licitación N°1400-014.pdf</td><td><textarea class="editable">Documento acompañado.</textarea></td></tr>
+          <tr class="check-row"><td>2</td><td>Bases administrativas generales</td><td class="checkbox-cell"><input type="radio" name="r2" class="si" checked></td><td class="checkbox-cell"><input type="radio" name="r2" class="no"></td><td>02. Bases administrativas de licitación.pdf</td><td><textarea class="editable">Documento acompañado.</textarea></td></tr>
+          <tr class="check-row"><td>3</td><td>Bases administrativas especiales</td><td class="checkbox-cell"><input type="radio" name="r3" class="si" checked></td><td class="checkbox-cell"><input type="radio" name="r3" class="no"></td><td>03. Bases administrativas especiales.pdf</td><td><textarea class="editable">Documento acompañado.</textarea></td></tr>
+          <tr class="check-row"><td>4</td><td>Bases técnicas</td><td class="checkbox-cell"><input type="radio" name="r4" class="si" checked></td><td class="checkbox-cell"><input type="radio" name="r4" class="no"></td><td>04. Bases técnicas de licitación.pdf</td><td><textarea class="editable">Documento acompañado.</textarea></td></tr>
+          <tr class="check-row"><td>5</td><td>Respaldo de reunión informativa obligatoria</td><td class="checkbox-cell"><input type="radio" name="r5" class="si" checked></td><td class="checkbox-cell"><input type="radio" name="r5" class="no"></td><td>Informe de adjudicación V1.doc</td><td><textarea class="editable">La reunión informativa obligatoria consta en el informe de evaluación; no se acompañó acta autónoma.</textarea></td></tr>
+          <tr class="check-row"><td>6</td><td>Informe de evaluación / adjudicación</td><td class="checkbox-cell"><input type="radio" name="r6" class="si" checked></td><td class="checkbox-cell"><input type="radio" name="r6" class="no"></td><td>Informe de adjudicación V1.doc</td><td><textarea class="editable">Documento acompañado.</textarea></td></tr>
+          <tr class="check-row"><td>7</td><td>Resolución de adjudicación correcta del proceso 2182-11-LE25</td><td class="checkbox-cell"><input type="radio" name="r7" class="si"></td><td class="checkbox-cell"><input type="radio" name="r7" class="no" checked></td><td>No se encuentra en expediente revisado</td><td><textarea class="editable">No se advierte resolución de adjudicación íntegra correcta dentro de los documentos aportados.</textarea></td></tr>
+          <tr class="check-row"><td>8</td><td>Ficha interna de adjudicación</td><td class="checkbox-cell"><input type="radio" name="r8" class="si" checked></td><td class="checkbox-cell"><input type="radio" name="r8" class="no"></td><td>Ficha adjudicación Zonales.docx</td><td><textarea class="editable">Documento acompañado; contiene inconsistencias a validar.</textarea></td></tr>
+          <tr class="check-row"><td>9</td><td>Publicación y antecedentes consistentes con el expediente</td><td class="checkbox-cell"><input type="radio" name="r9" class="si" checked></td><td class="checkbox-cell"><input type="radio" name="r9" class="no"></td><td>Ficha, informe y antecedentes revisados</td><td><textarea class="editable">Existen antecedentes suficientes para trazar el proceso, con inconsistencias que deben revisarse.</textarea></td></tr>
+        </table>
+
+        <h3>4.2. Contrato y garantías</h3>
+        <table class="check-table">
+          <tr><th style="width:5%">N°</th><th style="width:28%">Ítem a revisar</th><th style="width:7%">Sí</th><th style="width:9%">No / N.A.</th><th style="width:18%">Evidencia / folio</th><th>Observación</th></tr>
+          <tr class="check-row"><td>1</td><td>Contrato firmado por ambas partes</td><td class="checkbox-cell"><input type="radio" name="r10" class="si" checked></td><td class="checkbox-cell"><input type="radio" name="r10" class="no"></td><td>contrato calderas.pdf</td><td><textarea class="editable">Contrato proporcionado por el usuario.</textarea></td></tr>
+          <tr class="check-row"><td>2</td><td>Objeto contractual coincide con bases y adjudicación</td><td class="checkbox-cell"><input type="radio" name="r11" class="si" checked></td><td class="checkbox-cell"><input type="radio" name="r11" class="no"></td><td>Contrato y bases</td><td><textarea class="editable">El objeto coincide con las bases y el informe de adjudicación.</textarea></td></tr>
+          <tr class="check-row"><td>3</td><td>Plazo contractual coincide con bases (36 meses)</td><td class="checkbox-cell"><input type="radio" name="r12" class="si" checked></td><td class="checkbox-cell"><input type="radio" name="r12" class="no"></td><td>Contrato, bases e informe</td><td><textarea class="editable">La ficha interna indica erróneamente 336 meses; debe corregirse.</textarea></td></tr>
+          <tr class="check-row"><td>4</td><td>Fecha de inicio del servicio correctamente definida</td><td class="checkbox-cell"><input type="radio" name="r13" class="si" checked></td><td class="checkbox-cell"><input type="radio" name="r13" class="no"></td><td>Contrato y ficha de adjudicación</td><td><textarea class="editable">Se identifica inicio el 04-03-2026.</textarea></td></tr>
+          <tr class="check-row"><td>5</td><td>Cláusula de precio anual preventivo claramente establecida</td><td class="checkbox-cell"><input type="radio" name="r14" class="si" checked></td><td class="checkbox-cell"><input type="radio" name="r14" class="no"></td><td>Contrato y anexo económico</td><td><textarea class="editable">Se identifica valor anual preventivo de 171,36 UF IVA incluido.</textarea></td></tr>
+          <tr class="check-row"><td>6</td><td>Cálculo del total 36 meses consistente con el contrato</td><td class="checkbox-cell"><input type="radio" name="r15" class="si" checked></td><td class="checkbox-cell"><input type="radio" name="r15" class="no"></td><td>Ficha adjudicación Zonales / Anexo económico</td><td><textarea class="editable">514,08 UF IVA incluido para 36 meses de preventivo.</textarea></td></tr>
+          <tr class="check-row"><td>7</td><td>Boleta / póliza de fiel cumplimiento incorporada al expediente</td><td class="checkbox-cell"><input type="radio" name="r16" class="si" checked></td><td class="checkbox-cell"><input type="radio" name="r16" class="no"></td><td>BG 7336576 - calderas.pdf</td><td><textarea class="editable">Boleta incorporada al expediente.</textarea></td></tr>
+          <tr class="check-row"><td>8</td><td>Monto de garantía corresponde al 5% del valor neto del contrato</td><td class="checkbox-cell"><input type="radio" name="r17" class="si" checked></td><td class="checkbox-cell"><input type="radio" name="r17" class="no"></td><td>Boleta y ficha económica</td><td><textarea class="editable">Monto compatible con 5% del valor neto total del contrato.</textarea></td></tr>
+          <tr class="check-row"><td>9</td><td>Vigencia de garantía cubre plazo contractual más 60 días hábiles</td><td class="checkbox-cell"><input type="radio" name="r18" class="si" checked></td><td class="checkbox-cell"><input type="radio" name="r18" class="no"></td><td>Boleta y cláusula de garantía</td><td><textarea class="editable">Parece cubrir plazo contractual más 60 días hábiles; conviene recálculo formal.</textarea></td></tr>
+        </table>
+
+        <h3>4.3. Personal, seguridad y subcontratación</h3>
+        <table class="check-table">
+          <tr><th style="width:5%">N°</th><th style="width:28%">Ítem a revisar</th><th style="width:7%">Sí</th><th style="width:9%">No / N.A.</th><th style="width:18%">Evidencia / folio</th><th>Observación</th></tr>
+          <tr class="check-row"><td>1</td><td>Nómina inicial del personal presentada por el contratista</td><td class="checkbox-cell"><input type="radio" name="r19" class="si"></td><td class="checkbox-cell"><input type="radio" name="r19" class="no"></td><td></td><td><textarea class="editable">No se adjuntó nómina inicial del personal.</textarea></td></tr>
+          <tr class="check-row"><td>2</td><td>Identificación del supervisor del contrato por parte del proveedor</td><td class="checkbox-cell"><input type="radio" name="r20" class="si" checked></td><td class="checkbox-cell"><input type="radio" name="r20" class="no"></td><td>Informe de adjudicación V1.doc</td><td><textarea class="editable">El informe evalúa supervisor ofertado; falta designación operativa para ejecución.</textarea></td></tr>
+          <tr class="check-row"><td>3</td><td>Acreditación de experiencia o certificaciones del personal clave</td><td class="checkbox-cell"><input type="radio" name="r21" class="si" checked></td><td class="checkbox-cell"><input type="radio" name="r21" class="no"></td><td>Informe de adjudicación V1.doc</td><td><textarea class="editable">Consta título/capacitación del supervisor en el informe; falta respaldo fuente en carpeta de auditoría.</textarea></td></tr>
+          <tr class="check-row"><td>4</td><td>Recepción del reglamento de prevención de riesgos</td><td class="checkbox-cell"><input type="radio" name="r22" class="si" checked></td><td class="checkbox-cell"><input type="radio" name="r22" class="no"></td><td>Reglamento PR Contratistas.pdf</td><td><textarea class="editable">Se adjuntó el reglamento; falta constancia de recepción firmada por el contratista.</textarea></td></tr>
+          <tr class="check-row"><td>5</td><td>Anexos de seguridad firmados por el contratista</td><td class="checkbox-cell"><input type="radio" name="r23" class="si"></td><td class="checkbox-cell"><input type="radio" name="r23" class="no"></td><td></td><td><textarea class="editable">No se adjuntaron anexos de seguridad firmados.</textarea></td></tr>
+          <tr class="check-row"><td>6</td><td>Subcontratación declarada o confirmación de que no aplica</td><td class="checkbox-cell"><input type="radio" name="r24" class="si"></td><td class="checkbox-cell"><input type="radio" name="r24" class="no"></td><td></td><td><textarea class="editable">No se adjuntó declaración de subcontratación o constancia de no aplicación.</textarea></td></tr>
+          <tr class="check-row"><td>7</td><td>Tope de subcontratación controlado</td><td class="checkbox-cell"><input type="radio" name="r25" class="si"></td><td class="checkbox-cell"><input type="radio" name="r25" class="no"></td><td></td><td><textarea class="editable">No hay antecedentes suficientes para verificarlo.</textarea></td></tr>
+        </table>
+
+        <h3>4.4. Ejecución técnica del servicio</h3>
+        <table class="check-table">
+          <tr><th style="width:5%">N°</th><th style="width:28%">Ítem a revisar</th><th style="width:7%">Sí</th><th style="width:9%">No / N.A.</th><th style="width:18%">Evidencia / folio</th><th>Observación</th></tr>
+          <tr class="check-row"><td>1</td><td>Cronograma o programación bimestral de mantenciones preventivas</td><td class="checkbox-cell"><input type="radio" name="r26" class="si"></td><td class="checkbox-cell"><input type="radio" name="r26" class="no"></td><td></td><td><textarea class="editable">No se adjuntó cronograma de ejecución.</textarea></td></tr>
+          <tr class="check-row"><td>2</td><td>Checklists de mantención por edificio/equipo</td><td class="checkbox-cell"><input type="radio" name="r27" class="si"></td><td class="checkbox-cell"><input type="radio" name="r27" class="no"></td><td></td><td><textarea class="editable">No se adjuntaron checklists de mantención.</textarea></td></tr>
+          <tr class="check-row"><td>3</td><td>Informes técnicos de mantención emitidos por período</td><td class="checkbox-cell"><input type="radio" name="r28" class="si"></td><td class="checkbox-cell"><input type="radio" name="r28" class="no"></td><td></td><td><textarea class="editable">No se adjuntaron informes técnicos de ejecución.</textarea></td></tr>
+          <tr class="check-row"><td>4</td><td>Registro de emergencias con fecha, hora de aviso y hora de atención</td><td class="checkbox-cell"><input type="radio" name="r29" class="si"></td><td class="checkbox-cell"><input type="radio" name="r29" class="no"></td><td></td><td><textarea class="editable">No se adjuntó bitácora o registro de emergencias.</textarea></td></tr>
+          <tr class="check-row"><td>5</td><td>Informes de fallas y diagnósticos emitidos cuando correspondió</td><td class="checkbox-cell"><input type="radio" name="r30" class="si"></td><td class="checkbox-cell"><input type="radio" name="r30" class="no"></td><td></td><td><textarea class="editable">No se adjuntaron informes de fallas.</textarea></td></tr>
+          <tr class="check-row"><td>6</td><td>Presupuestos de mantención correctiva aprobados previamente</td><td class="checkbox-cell"><input type="radio" name="r31" class="si"></td><td class="checkbox-cell"><input type="radio" name="r31" class="no"></td><td></td><td><textarea class="editable">No se adjuntaron presupuestos correctivos.</textarea></td></tr>
+          <tr class="check-row"><td>7</td><td>Órdenes de compra o autorizaciones para correctivos</td><td class="checkbox-cell"><input type="radio" name="r32" class="si"></td><td class="checkbox-cell"><input type="radio" name="r32" class="no"></td><td></td><td><textarea class="editable">No se adjuntaron órdenes de compra/autorizaciones de correctivos.</textarea></td></tr>
+          <tr class="check-row"><td>8</td><td>Conformidad técnica o recepción del servicio por la contraparte</td><td class="checkbox-cell"><input type="radio" name="r33" class="si"></td><td class="checkbox-cell"><input type="radio" name="r33" class="no"></td><td></td><td><textarea class="editable">No se adjuntaron conformidades técnicas.</textarea></td></tr>
+        </table>
+
+        <h3>4.5. Estados de pago y cumplimiento laboral</h3>
+        <table class="check-table">
+          <tr><th style="width:5%">N°</th><th style="width:28%">Ítem a revisar</th><th style="width:7%">Sí</th><th style="width:9%">No / N.A.</th><th style="width:18%">Evidencia / folio</th><th>Observación</th></tr>
+          <tr class="check-row"><td>1</td><td>Estado de pago presentado dentro del plazo</td><td class="checkbox-cell"><input type="radio" name="r34" class="si"></td><td class="checkbox-cell"><input type="radio" name="r34" class="no"></td><td></td><td><textarea class="editable">Sin evidencia adjunta para marcar como completado.</textarea></td></tr>
+          <tr class="check-row"><td>2</td><td>Factura emitida correctamente</td><td class="checkbox-cell"><input type="radio" name="r35" class="si"></td><td class="checkbox-cell"><input type="radio" name="r35" class="no"></td><td></td><td><textarea class="editable">Sin evidencia adjunta para marcar como completado.</textarea></td></tr>
+          <tr class="check-row"><td>3</td><td>F30-1 del contratista incorporado</td><td class="checkbox-cell"><input type="radio" name="r36" class="si"></td><td class="checkbox-cell"><input type="radio" name="r36" class="no"></td><td></td><td><textarea class="editable">Sin evidencia adjunta para marcar como completado.</textarea></td></tr>
+          <tr class="check-row"><td>4</td><td>F30-1 de subcontratistas incorporado, si aplica</td><td class="checkbox-cell"><input type="radio" name="r37" class="si"></td><td class="checkbox-cell"><input type="radio" name="r37" class="no"></td><td></td><td><textarea class="editable">Sin evidencia adjunta para marcar como completado.</textarea></td></tr>
+          <tr class="check-row"><td>5</td><td>Comprobante de cotizaciones previsionales adjunto</td><td class="checkbox-cell"><input type="radio" name="r38" class="si"></td><td class="checkbox-cell"><input type="radio" name="r38" class="no"></td><td></td><td><textarea class="editable">Sin evidencia adjunta para marcar como completado.</textarea></td></tr>
+          <tr class="check-row"><td>6</td><td>Liquidaciones de remuneraciones adjuntas</td><td class="checkbox-cell"><input type="radio" name="r39" class="si"></td><td class="checkbox-cell"><input type="radio" name="r39" class="no"></td><td></td><td><textarea class="editable">Sin evidencia adjunta para marcar como completado.</textarea></td></tr>
+          <tr class="check-row"><td>7</td><td>Nómina de trabajadores del período adjunta</td><td class="checkbox-cell"><input type="radio" name="r40" class="si"></td><td class="checkbox-cell"><input type="radio" name="r40" class="no"></td><td></td><td><textarea class="editable">Sin evidencia adjunta para marcar como completado.</textarea></td></tr>
+          <tr class="check-row"><td>8</td><td>Documentos técnicos de respaldo adjuntos al pago</td><td class="checkbox-cell"><input type="radio" name="r41" class="si"></td><td class="checkbox-cell"><input type="radio" name="r41" class="no"></td><td></td><td><textarea class="editable">Sin evidencia adjunta para marcar como completado.</textarea></td></tr>
+          <tr class="check-row"><td>9</td><td>Conversión UF aplicada según la regla contractual</td><td class="checkbox-cell"><input type="radio" name="r42" class="si"></td><td class="checkbox-cell"><input type="radio" name="r42" class="no"></td><td></td><td><textarea class="editable">Sin evidencia adjunta para marcar como completado.</textarea></td></tr>
+        </table>
+
+        <h3>4.6. Control de multas, riesgos y observaciones</h3>
+        <table class="check-table">
+          <tr><th style="width:5%">N°</th><th style="width:28%">Ítem a revisar</th><th style="width:7%">Sí</th><th style="width:9%">No / N.A.</th><th style="width:18%">Evidencia / folio</th><th>Observación</th></tr>
+          <tr class="check-row"><td>1</td><td>Existe registro de atrasos en mantenciones preventivas</td><td class="checkbox-cell"><input type="radio" name="r43" class="si"></td><td class="checkbox-cell"><input type="radio" name="r43" class="no"></td><td></td><td><textarea class="editable">No hay evidencia de ejecución para determinar atrasos.</textarea></td></tr>
+          <tr class="check-row"><td>2</td><td>Existe control de tiempos de respuesta a emergencias</td><td class="checkbox-cell"><input type="radio" name="r44" class="si"></td><td class="checkbox-cell"><input type="radio" name="r44" class="no"></td><td></td><td><textarea class="editable">No hay bitácora de emergencias adjunta.</textarea></td></tr>
+          <tr class="check-row"><td>3</td><td>Se evaluó aplicación de multas cuando correspondía</td><td class="checkbox-cell"><input type="radio" name="r45" class="si"></td><td class="checkbox-cell"><input type="radio" name="r45" class="no"></td><td></td><td><textarea class="editable">No hay matriz de multas o incidencias adjunta.</textarea></td></tr>
+          <tr class="check-row"><td>4</td><td>No existen documentos contradictorios en el expediente</td><td class="checkbox-cell"><input type="radio" name="r46" class="si"></td><td class="checkbox-cell"><input type="radio" name="r46" class="no" checked></td><td>Comparación de expediente</td><td><textarea class="editable">Se detectaron inconsistencias documentales relevantes en la carpeta revisada.</textarea></td></tr>
+          <tr class="check-row"><td>5</td><td>No existen errores de digitación relevantes en fichas internas</td><td class="checkbox-cell"><input type="radio" name="r47" class="si"></td><td class="checkbox-cell"><input type="radio" name="r47" class="no" checked></td><td>Ficha adjudicación Zonales.docx</td><td><textarea class="editable">La ficha contiene al menos el error “336 meses” y una inconsistencia sobre plan de compras.</textarea></td></tr>
+          <tr class="check-row"><td>6</td><td>El expediente permite trazabilidad completa desde licitación hasta pago</td><td class="checkbox-cell"><input type="radio" name="r48" class="si"></td><td class="checkbox-cell"><input type="radio" name="r48" class="no" checked></td><td>Revisión integral del expediente</td><td><textarea class="editable">Aún faltan antecedentes clave para trazabilidad completa: adjudicación íntegra, personal, ejecución y pagos.</textarea></td></tr>
+        </table>
+      </section>
+
+      <section id="hallazgos">
+        <h2>5. Hallazgos críticos a corregir</h2>
+        <details class="hallazgo" open><summary><strong>Hallazgo crítico 1: Error grave de plazo en la ficha interna de adjudicación</strong></summary><p><strong>Hecho acreditado:</strong> La “Ficha adjudicación Zonales.docx” consigna “336 meses” como plazo del bien o servicio.</p><p><strong>Observación:</strong> El contrato, las bases y la lógica del proceso son consistentes con un plazo de 36 meses.</p><p><strong>Riesgo:</strong> El error afecta la trazabilidad administrativa, la programación presupuestaria, la garantía y la revisión posterior del expediente.</p><p><strong>Pendiente de verificar:</strong> Determinar si se trata de error material de digitación o si fue replicado en otros registros internos.</p><p><strong>Acción correctiva recomendada:</strong> Rectificar formalmente la ficha y dejar respaldo de la corrección.</p></details>
+        <details class="hallazgo" open><summary><strong>Hallazgo crítico 2: Riesgo de interpretación por falta de consolidación económica</strong></summary><p><strong>Hecho acreditado:</strong> El expediente contiene referencias a UF 171,36 anuales, UF 514,08 como total preventivo a 36 meses y UF 554,4 como monto estimado del proceso.</p><p><strong>Observación:</strong> Los montos parecen compatibles, pero no están presentados de forma consolidada y homogénea en el expediente.</p><p><strong>Riesgo:</strong> Puede generar observaciones en control financiero, garantía y trazabilidad presupuestaria.</p><p><strong>Pendiente de verificar:</strong> Base exacta de cálculo de garantía y tratamiento del componente correctivo.</p><p><strong>Acción correctiva recomendada:</strong> Incorporar cuadro de resumen económico contractual y de adjudicación.</p></details>
+        <details class="hallazgo" open><summary><strong>Hallazgo crítico 3: Variación en la individualización del contratista</strong></summary><p><strong>Hecho acreditado:</strong> El proveedor aparece como “Marcial Roberto Moreno Gatica” en algunos documentos y “Marcial Moreno Gatica” en el contrato.</p><p><strong>Observación:</strong> La diferencia no permite concluir por sí sola error de identidad, pero sí exige consistencia documental.</p><p><strong>Riesgo:</strong> Debilidad formal de trazabilidad e identificación.</p><p><strong>Pendiente de verificar:</strong> Uniformidad exacta con cédula, oferta y registro proveedor.</p><p><strong>Acción correctiva recomendada:</strong> Regularizar la individualización en la carpeta contractual.</p></details>
+        <details class="hallazgo" open><summary><strong>Hallazgo crítico 4: Expediente incompleto para trazabilidad integral</strong></summary><p><strong>Hecho acreditado:</strong> No se acompañan todos los respaldos que permitirían cerrar revisión completa de adjudicación, ejecución, pagos y control.</p><p><strong>Observación:</strong> El expediente es útil para revisión preliminar, pero no para auditoría integral cerrada.</p><p><strong>Riesgo:</strong> Debilidad de auditabilidad y control.</p><p><strong>Pendiente de verificar:</strong> Completar antecedentes faltantes de adjudicación, ejecución y pago.</p><p><strong>Acción correctiva recomendada:</strong> Conformar carpeta contractual completa y ordenada.</p></details>
+      </section>
+
+      <section id="acciones">
+        <h2>6. Acciones correctivas recomendadas</h2>
+        <ul>
+          <li>Corregir la ficha interna de adjudicación en el campo plazo (36 meses).</li>
+          <li>Incorporar resolución de adjudicación íntegra y correcta del proceso.</li>
+          <li>Consolidar en un cuadro único la estructura económica del contrato y del proceso.</li>
+          <li>Uniformar la individualización del contratista en todos los documentos base.</li>
+          <li>Incorporar respaldo de designación del supervisor del contrato.</li>
+          <li>Completar expediente con antecedentes de ejecución, conformidad, pagos y cumplimiento laboral/previsional.</li>
+          <li>Incorporar respaldo de prevención de riesgos y anexos firmados por el contratista.</li>
+        </ul>
+      </section>
+
+      <section id="cierre">
+        <h2>7. Cierre obligatorio</h2>
+        <p><strong>Conclusión preliminar:</strong></p>
+        <p>El expediente revisado permite sostener que existe una contratación materialmente formada y razonablemente trazable en sus elementos esenciales. Sin embargo, no presenta aún un estándar óptimo de integridad documental para control exhaustivo o auditoría cerrada.</p>
+        <p>Se acreditan inconsistencias relevantes en plazo, individualización y presentación económica, además de vacíos de respaldo que deben ser subsanados para asegurar coherencia, auditabilidad y facilidad de revisión futura.</p>
+        <p><strong>Validación metodológica:</strong></p>
+        <ol>
+          <li>No se confundió ausencia con contradicción documental.</li>
+          <li>No se marcó “Cumple” donde existía inconsistencia acreditada.</li>
+          <li>Los hallazgos se sustentan en la documentación revisada.</li>
+          <li>Las materias de ejecución no fueron tratadas como cumplimiento acreditado sin respaldo documental.</li>
+        </ol>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script>
+function updateCounters(){
+  const visibleRows = Array.from(document.querySelectorAll('.check-row')).filter(r => !r.classList.contains('hidden-row'));
+  let si=0,no=0,pend=0;
+  visibleRows.forEach(r=>{
+    const yes=r.querySelector('input.si').checked;
+    const not=r.querySelector('input.no').checked;
+    if(yes) si++;
+    else if(not) no++;
+    else pend++;
+  });
+  document.getElementById('countSi').textContent=si;
+  document.getElementById('countNo').textContent=no;
+  document.getElementById('countPend').textContent=pend;
+  document.getElementById('countVisible').textContent=visibleRows.length;
+}
+function applyFilters(){
+  const q=document.getElementById('searchBox').value.toLowerCase().trim();
+  const status=document.getElementById('statusFilter').value;
+  document.querySelectorAll('.check-row').forEach(row=>{
+    const text=row.innerText.toLowerCase();
+    const yes=row.querySelector('input.si').checked;
+    const not=row.querySelector('input.no').checked;
+    let statusOk=true;
+    if(status==='si') statusOk=yes;
+    else if(status==='no') statusOk=not;
+    else if(status==='pendiente') statusOk=!yes && !not;
+    const textOk=!q || text.includes(q);
+    row.classList.toggle('hidden-row', !(statusOk && textOk));
+  });
+  updateCounters();
+}
+function resetChecks(){
+  document.querySelectorAll('.check-row input[type="radio"]').forEach(i=>{
+    i.checked = i.defaultChecked;
+  });
+  document.querySelectorAll('.editable').forEach(t=>{
+    t.value=t.defaultValue;
+  });
+  applyFilters();
+}
+function expandAll(){document.querySelectorAll('details').forEach(d=>d.open=true);}
+function collapseHallazgos(){document.querySelectorAll('details').forEach(d=>d.open=false);}
+document.getElementById('searchBox').addEventListener('input', applyFilters);
+document.getElementById('statusFilter').addEventListener('change', applyFilters);
+document.querySelectorAll('.check-row input[type="radio"]').forEach(i=>i.addEventListener('change', updateCounters));
+updateCounters();
+</script>
+</body>
+</html>

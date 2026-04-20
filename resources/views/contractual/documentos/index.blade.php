@@ -73,7 +73,7 @@
         </div>
     @endif
 
-    @if (session('error')->with('error', 'El documento ya fue cargado previamente en esta revisión.'))
+    @if (session('error'))
         <div class="alert alert-danger mb-3" role="alert">
             {{ session('error') }}
         </div>

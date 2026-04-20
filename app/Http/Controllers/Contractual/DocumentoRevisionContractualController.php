@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Contractual\StoreDocumentoRevisionContractualRequest;
 use App\Models\DocumentoRevisionContractual;
 use App\Models\RevisionContractual;
+use App\Services\Contractual\PdfTextExtractorService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -20,12 +21,15 @@ class DocumentoRevisionContractualController extends Controller
         return view('contractual.documentos.index', compact('revision'));
     }
 
-    public function store(StoreDocumentoRevisionContractualRequest $request, RevisionContractual $revision): RedirectResponse
-    {
+    public function store(
+        StoreDocumentoRevisionContractualRequest $request,
+        RevisionContractual $revision,
+        PdfTextExtractorService $extractor
+    ): RedirectResponse {
         $archivo = $request->file('archivo');
 
         $nombreOriginal = $archivo->getClientOriginalName();
-        $extension = $archivo->getClientOriginalExtension();
+        $extension = strtolower($archivo->getClientOriginalExtension());
         $mimeType = $archivo->getMimeType();
         $tamano = $archivo->getSize();
 
@@ -50,6 +54,17 @@ class DocumentoRevisionContractualController extends Controller
             'public'
         );
 
+        $textoExtraido = null;
+        $extraccionEstado = 'PENDIENTE';
+        $tieneTextoExtraible = false;
+
+        if ($extension === 'pdf') {
+            $resultadoExtraccion = $extractor->extractFromPublicPath($ruta);
+            $textoExtraido = $resultadoExtraccion['texto'];
+            $extraccionEstado = $resultadoExtraccion['estado'];
+            $tieneTextoExtraible = $resultadoExtraccion['tiene_texto_extraible'];
+        }
+
         DocumentoRevisionContractual::create([
             'revision_contractual_id' => $revision->id,
             'nombre_original' => $nombreOriginal,
@@ -60,6 +75,9 @@ class DocumentoRevisionContractualController extends Controller
             'extension' => $extension,
             'tipo_documento' => $request->tipo_documento,
             'hash_archivo' => $hashArchivo,
+            'texto_extraido' => $textoExtraido,
+            'extraccion_estado' => $extraccionEstado,
+            'tiene_texto_extraible' => $tieneTextoExtraible,
             'es_vigente' => true,
             'user_id' => auth()->id(),
         ]);
@@ -75,7 +93,7 @@ class DocumentoRevisionContractualController extends Controller
             abort(404);
         }
 
-        if ($documento->ruta && Storage::disk('public')->exists($documento->ruta)) {
+        if (!empty($documento->ruta) && Storage::disk('public')->exists($documento->ruta)) {
             Storage::disk('public')->delete($documento->ruta);
         }
 

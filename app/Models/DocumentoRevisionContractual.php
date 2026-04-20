@@ -19,12 +19,16 @@ class DocumentoRevisionContractual extends Model
         'extension',
         'tipo_documento',
         'hash_archivo',
+        'texto_extraido',
+        'extraccion_estado',
+        'tiene_texto_extraible',
         'es_vigente',
         'user_id',
     ];
 
     protected $casts = [
         'es_vigente' => 'boolean',
+        'tiene_texto_extraible' => 'boolean',
     ];
 
     public function revision(): BelongsTo

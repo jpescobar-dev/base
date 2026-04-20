@@ -1,0 +1,14 @@
+Verificar en Tinker:
+
+php artisan tinker
+
+$s = App\Models\SnapshotRevisionContractual::latest()->first();
+$s->id;
+$s->json_resultado;
+$s->hallazgos;
+$s->checklist;
+
+Resultado esperado:
+- snapshot nuevo con tipo_ejecucion = openai
+- hallazgos creados automáticamente
+- checklist creado automáticamente

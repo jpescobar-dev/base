@@ -1,61 +1,111 @@
 @extends('layouts.theme.app')
 
-@section('title', 'Detalle Snapshot')
-@section('title2', 'Detalle')
-
 @section('content')
-<div class="widget-content widget-content-area br-6 mt-2 mb-2">
-    <div class="row mb-4">
-        <div class="col-md-4 d-flex align-items-center"></div>
+<div class="container-fluid">
 
-        <div class="col-md-4 text-center">
-            <h4 class="mb-0">Snapshot v{{ $snapshot->numero_version }}</h4>
-        </div>
+    @php
+        // SEMÁFORO
+        $riesgo = 'bajo';
+        if ($snapshot->hallazgos->contains('nivel_criticidad', 'alta')) {
+            $riesgo = 'alto';
+        } elseif ($snapshot->hallazgos->contains('nivel_criticidad', 'media')) {
+            $riesgo = 'medio';
+        }
 
-        <div class="col-md-4 text-right">
-            <a href="{{ route('contractual.revisiones.snapshots.index', $revision) }}"
-               class="btn btn-outline-secondary btn-sm">
-                Volver
-            </a>
+        // CONTADORES
+        $stats = [
+            'cumple' => $snapshot->checklist->where('estado_item', 'cumple')->count(),
+            'no_cumple' => $snapshot->checklist->where('estado_item', 'no_cumple')->count(),
+            'pendiente' => $snapshot->checklist->where('estado_item', 'pendiente_verificar')->count(),
+            'no_se_encuentra' => $snapshot->checklist->where('estado_item', 'no_se_encuentra')->count(),
+        ];
+    @endphp
+
+    {{-- SEMÁFORO --}}
+    <div class="card mb-4 shadow-sm text-center">
+        <div class="card-body">
+            <h5>Riesgo General</h5>
+            <span class="badge 
+                @if($riesgo == 'alto') bg-danger
+                @elseif($riesgo == 'medio') bg-warning text-dark
+                @else bg-success
+                @endif
+                p-3 fs-5">
+                {{ strtoupper($riesgo) }}
+            </span>
         </div>
     </div>
 
-    <div class="widget widget-table-one">
-        <div class="widget-content">
-            <table class="table table-bordered mb-0">
+    {{-- CONTADORES --}}
+    <div class="row mb-4 text-center">
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6>Cumple</h6>
+                    <h4>{{ $stats['cumple'] }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <h6>No Cumple</h6>
+                    <h4>{{ $stats['no_cumple'] }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h6>Pendiente</h6>
+                    <h4>{{ $stats['pendiente'] }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-secondary text-white">
+                <div class="card-body">
+                    <h6>No se encuentra</h6>
+                    <h4>{{ $stats['no_se_encuentra'] }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- CHECKLIST --}}
+    <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white">
+            Checklist
+        </div>
+
+        <div class="card-body table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Item</th>
+                        <th>Estado</th>
+                        <th>Observación</th>
+                    </tr>
+                </thead>
                 <tbody>
-                    <tr>
-                        <th width="20%">ID</th>
-                        <td>{{ $snapshot->id }}</td>
-                        <th width="20%">Versión</th>
-                        <td>{{ $snapshot->numero_version }}</td>
+                    @foreach($snapshot->checklist as $c)
+                    <tr class="
+                        @if($c->estado_item == 'no_cumple') table-danger
+                        @elseif($c->estado_item == 'pendiente_verificar') table-warning
+                        @elseif($c->estado_item == 'no_se_encuentra') table-secondary
+                        @endif
+                    ">
+                        <td>{{ $c->orden }}</td>
+                        <td>{{ $c->item }}</td>
+                        <td>{{ $c->estado_item }}</td>
+                        <td>{{ $c->observacion }}</td>
                     </tr>
-                    <tr>
-                        <th>Tipo de ejecución</th>
-                        <td>{{ strtoupper($snapshot->tipo_ejecucion) }}</td>
-                        <th>Actual</th>
-                        <td>{{ $snapshot->es_actual ? 'Sí' : 'No' }}</td>
-                    </tr>
-                    <tr>
-                        <th>Usuario</th>
-                        <td>{{ $snapshot->usuario->name ?? 'N/D' }}</td>
-                        <th>Fecha</th>
-                        <td>{{ $snapshot->created_at ? $snapshot->created_at->format('d-m-Y H:i') : '-' }}</td>
-                    </tr>
-                    <tr>
-                        <th>Resumen</th>
-                        <td colspan="3">{{ $snapshot->resumen ?: 'Sin resumen' }}</td>
-                    </tr>
+                    @endforeach
                 </tbody>
             </table>
-
-            @if(!empty($snapshot->json_resultado))
-                <div class="mt-4">
-                    <h5>Resultado JSON</h5>
-                    <pre class="bg-light p-3 border rounded">{{ json_encode($snapshot->json_resultado, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
-                </div>
-            @endif
         </div>
     </div>
+
 </div>
 @endsection

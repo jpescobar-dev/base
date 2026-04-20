@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SnapshotRevisionContractual extends Model
 {
@@ -32,5 +33,17 @@ class SnapshotRevisionContractual extends Model
     public function usuario(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function hallazgos(): HasMany
+    {
+        return $this->hasMany(HallazgoRevisionContractual::class, 'snapshot_revision_contractual_id')
+            ->latest();
+    }
+
+    public function checklist(): HasMany
+    {
+        return $this->hasMany(ChecklistRevisionContractual::class, 'snapshot_revision_contractual_id')
+            ->orderBy('orden');
     }
 }

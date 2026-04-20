@@ -7,6 +7,7 @@ use App\Http\Controllers\EstadoController;
 use App\Http\Controllers\Contractual\DocumentoRevisionContractualController;
 use App\Http\Controllers\Contractual\RevisionContractualController;
 use App\Http\Controllers\Contractual\SnapshotRevisionContractualController;
+use App\Http\Controllers\Contractual\AnalisisRevisionContractualController;
 
 
 
@@ -79,6 +80,10 @@ Route::middleware(['auth'])
 
         Route::get('revisiones/{revision}/snapshots/{snapshot}', [SnapshotRevisionContractualController::class, 'show'])
             ->name('revisiones.snapshots.show');
+
+          
+
+        Route::post('revisiones/{revision}/analizar', [AnalisisRevisionContractualController::class, 'store'])->name('revisiones.analizar');
 
 
     });

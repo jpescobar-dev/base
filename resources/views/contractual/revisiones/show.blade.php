@@ -160,22 +160,37 @@
             <h5 class="">Snapshots de la Revisión</h5>
 
             <div class="d-flex gap-2">
-                <form action="{{ route('contractual.revisiones.snapshots.store', $revision) }}"
-                      method="POST"
-                      class="d-inline">
-                    @csrf
-                    <button type="submit"
-                            class="btn btn-outline-primary btn-sm"
-                            onclick="return confirm('¿Deseas generar un nuevo snapshot de esta revisión?');">
-                        Guardar Snapshot
-                    </button>
-                </form>
 
-                <a href="{{ route('contractual.revisiones.snapshots.index', $revision) }}"
-                   class="btn btn-outline-secondary btn-sm">
-                    Ver historial
-                </a>
-            </div>
+            {{-- BOTÓN ANALIZAR IA --}}
+            <form action="{{ route('contractual.revisiones.analizar', $revision) }}"
+                method="POST"
+                class="d-inline">
+                @csrf
+                <button type="submit"
+                        class="btn btn-outline-success btn-sm"
+                        onclick="return confirm('¿Deseas ejecutar el análisis con IA?');">
+                    Analizar con IA
+                </button>
+            </form>
+
+            {{-- SNAPSHOT --}}
+            <form action="{{ route('contractual.revisiones.snapshots.store', $revision) }}"
+                method="POST"
+                class="d-inline">
+                @csrf
+                <button type="submit"
+                        class="btn btn-outline-primary btn-sm"
+                        onclick="return confirm('¿Deseas generar un nuevo snapshot de esta revisión?');">
+                    Guardar Snapshot
+                </button>
+            </form>
+
+            <a href="{{ route('contractual.revisiones.snapshots.index', $revision) }}"
+            class="btn btn-outline-secondary btn-sm">
+                Ver historial
+            </a>
+
+        </div>
         </div>
 
         <div class="widget-content">

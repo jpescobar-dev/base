@@ -1,0 +1,16 @@
+Mapeo aplicado por el controller:
+
+Hallazgos JSON:
+- titulo -> titulo
+- tipo_riesgo -> tipo_riesgo
+- descripcion -> observacion
+- criticidad -> nivel_criticidad
+- criticidad alta/media/baja -> tipo_hallazgo critico/relevante/observacion_menor
+- recomendacion -> recomendacion
+
+Checklist JSON:
+- item -> item
+- estado cumple/no_cumple/no_se_encuentra/pendiente
+  -> estado_item cumple/no_cumple/no_se_encuentra/pendiente_verificar
+- observacion -> observacion
+- referencia_documental -> null (por ahora)

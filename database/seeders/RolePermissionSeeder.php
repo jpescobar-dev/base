@@ -21,7 +21,8 @@ class RolePermissionSeeder extends Seeder
             'crear usuarios',
             'editar usuarios',
             'eliminar usuarios',
-            'asignar roles',
+            'asignar roles',  
+            'ver revisiones contractuales',       
         ];
 
         foreach ($permissions as $permission) {
@@ -42,6 +43,7 @@ class RolePermissionSeeder extends Seeder
             'crear usuarios',
             'editar usuarios',
             'asignar roles',
+            'ver revisiones contractuales', 
         ]);
 
         $operador->syncPermissions([

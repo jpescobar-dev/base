@@ -1,0 +1,8 @@
+Revisar en App\Models\SnapshotRevisionContractual.php que exista cast para json_resultado:
+
+protected $casts = [
+    'json_resultado' => 'array',
+    'es_actual' => 'boolean',
+];
+
+Sin ese cast, Laravel seguirá devolviendo texto en vez de array.
