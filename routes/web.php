@@ -8,6 +8,7 @@ use App\Http\Controllers\Contractual\DocumentoRevisionContractualController;
 use App\Http\Controllers\Contractual\RevisionContractualController;
 use App\Http\Controllers\Contractual\SnapshotRevisionContractualController;
 use App\Http\Controllers\Contractual\AnalisisRevisionContractualController;
+use App\Http\Controllers\Contractual\ExportRevisionContractualController;
 
 
 
@@ -86,7 +87,17 @@ Route::middleware(['auth'])
         Route::post('revisiones/{revision}/analizar', [AnalisisRevisionContractualController::class, 'store'])->name('revisiones.analizar');
 
 
-    });
+
+Route::get(
+            'revisiones/{revision}/snapshots/{snapshot}/export-word',
+            [ExportRevisionContractualController::class, 'snapshot']
+        )->name('revisiones.snapshots.export-word');
+
+        Route::get(
+            'revisiones/{revision}/snapshots/compare/{snapshot1}/{snapshot2}/export-word',
+            [ExportRevisionContractualController::class, 'compare']
+        )->name('revisiones.snapshots.compare.export-word');
+            });
 
 
 

@@ -5,19 +5,21 @@
     <div class="card-body">
         @forelse($items as $h)
             <div class="border rounded p-3 mb-3">
-                <h6 class="fw-bold mb-2">{{ $h->titulo }}</h6>
-                <p class="mb-2">
-                    <span class="badge bg-secondary">{{ $h->tipo_riesgo }}</span>
-                    <span class="badge 
-                        @if($h->nivel_criticidad == 'alta') bg-danger
-                        @elseif($h->nivel_criticidad == 'media') bg-warning text-dark
-                        @else bg-success
-                        @endif">
-                        {{ strtoupper($h->nivel_criticidad) }}
-                    </span>
-                </p>
-                <p class="mb-1"><strong>Descripción:</strong> {{ $h->observacion }}</p>
-                <p class="mb-0"><strong>Recomendación:</strong> {{ $h->recomendacion }}</p>
+                <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
+                    <div class="fw-bold">{{ $h->titulo ?: 'Hallazgo' }}</div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <span class="badge bg-secondary">{{ $h->tipo_riesgo ?: 'sin tipo' }}</span>
+                        <span class="badge
+                            @if($h->nivel_criticidad == 'alta') bg-danger
+                            @elseif($h->nivel_criticidad == 'media') bg-warning text-dark
+                            @else bg-success
+                            @endif">
+                            {{ strtoupper($h->nivel_criticidad ?? '-') }}
+                        </span>
+                    </div>
+                </div>
+                <div class="small text-muted mb-1">Descripción</div>
+                <div>{{ $h->observacion ?: '-' }}</div>
             </div>
         @empty
             <div class="text-muted">No hay registros en esta sección.</div>

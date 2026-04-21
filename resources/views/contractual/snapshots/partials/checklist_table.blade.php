@@ -1,6 +1,14 @@
 <div class="card shadow-sm mb-4">
     <div class="card-header bg-dark text-white">
-        <strong>{{ $titulo }}</strong>
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+            <div>
+                <strong>{{ $titulo }}</strong>
+                @isset($subtitulo)
+                    <div class="small text-white-50">{{ $subtitulo }}</div>
+                @endisset
+            </div>
+            <span class="badge bg-light text-dark">{{ $items->count() }} ítems</span>
+        </div>
     </div>
 
     <div class="card-body table-responsive">
@@ -8,7 +16,7 @@
             <thead class="table-light">
                 <tr>
                     <th style="width: 70px;">#</th>
-                    <th>Ítem</th>
+                    <th style="width: 28%;">Ítem</th>
                     <th style="width: 180px;">Estado</th>
                     <th>Observación</th>
                 </tr>
@@ -33,7 +41,7 @@
                                 {{ strtoupper($c->estado_item) }}
                             </span>
                         </td>
-                        <td>{{ $c->observacion }}</td>
+                        <td>{{ $c->observacion ?: '-' }}</td>
                     </tr>
                 @empty
                     <tr>

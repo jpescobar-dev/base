@@ -1,23 +1,18 @@
-Exportación Word de snapshot y comparador
+Optimización de vistas snapshot y comparador
 
 Incluye:
-- ExportRevisionContractualController
-- ExportRevisionContractualWordService
-- snippets de rutas
-- snippets de botones en Blade
+- show.blade.php optimizado
+- compare.blade.php optimizado
+- partial checklist_table.blade.php actualizado
+- partials compare_hallazgos y compare_checklist_simple
 
-Dependencia requerida en Laravel:
-composer require phpoffice/phpword
+Objetivo:
+- Mejorar legibilidad
+- Ordenar navegación
+- Integrar exportación Word
+- Hacer más institucional la experiencia de uso
 
 Pasos:
-1. Instalar phpword.
-2. Copiar archivos respetando rutas.
-3. Agregar rutas en routes/web.php.
-4. Agregar botones en las vistas.
-5. Ejecutar:
-   composer dump-autoload
+1. Copiar archivos respetando rutas.
+2. Ejecutar:
    php artisan optimize:clear
-
-Resultado:
-- Exportación Word de snapshot individual
-- Exportación Word del comparador de snapshots
