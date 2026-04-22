@@ -20,6 +20,120 @@
 
 <div class="widget-content widget-content-area br-6 mt-2 mb-2">
 
+    <style>
+        .doc-summary-split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .doc-summary-card {
+            border: 1px solid #d9e2ec;
+            border-radius: 16px;
+            padding: 16px 18px;
+        }
+
+        .doc-summary-card--file {
+            background: #f5f9ff;
+            border-color: #d4e4fb;
+        }
+
+        .doc-summary-card--extract {
+            background: #f4fbf7;
+            border-color: #d4eadc;
+        }
+
+        .doc-summary-head {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .doc-summary-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .doc-summary-icon--file {
+            background: #e7f1ff;
+            color: #2e6fb5;
+        }
+
+        .doc-summary-icon--extract {
+            background: #e6f5eb;
+            color: #2d7a4b;
+        }
+
+        .doc-summary-title {
+            font-weight: 700;
+            font-size: 15px;
+            margin: 0;
+        }
+
+        .doc-pill-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .doc-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 11px;
+            border-radius: 999px;
+            font-size: 13px;
+            line-height: 1;
+            border: 1px solid transparent;
+        }
+
+        .doc-pill svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .doc-pill--neutral {
+            background: #fafbfc;
+            border-color: #d9e2ec;
+            color: #32475b;
+        }
+
+        .doc-pill--file {
+            background: #edf5ff;
+            border-color: #d4e4fb;
+            color: #2e6fb5;
+        }
+
+        .doc-pill--extract {
+            background: #edf8f1;
+            border-color: #d7ecde;
+            color: #2d7a4b;
+        }
+
+        .doc-pill--muted {
+            background: #f7f7f8;
+            border-color: #e2e5e9;
+            color: #606f7b;
+        }
+
+        .doc-pill--danger-soft {
+            background: #fff2f2;
+            border-color: #f4d4d4;
+            color: #b34b4b;
+        }
+
+        @media (max-width: 991.98px) {
+            .doc-summary-split {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
     <div class="row mb-4">
         <div class="col-md-4 d-flex align-items-center"></div>
 
@@ -236,15 +350,125 @@
                 <div class="widget-content">
                     <div class="row mb-3">
                         <div class="col-md-12">
-                            <div class="d-flex flex-wrap gap-2">
-                                <span class="badge badge-light border">Total: {{ $stats['total'] }}</span>
-                                <span class="badge badge-light border">PDF: {{ $stats['pdf'] }}</span>
-                                <span class="badge badge-light border">DOCX: {{ $stats['docx'] }}</span>
-                                <span class="badge badge-light border">Texto: {{ $stats['texto'] }}</span>
-                                <span class="badge badge-light border">OCR: {{ $stats['ocr'] }}</span>
-                                <span class="badge badge-light border">Word: {{ $stats['word'] }}</span>
-                                <span class="badge badge-light border">Sin texto: {{ $stats['sin_texto'] }}</span>
-                                <span class="badge badge-light border">Error: {{ $stats['error'] }}</span>
+                            {{-- <div class="mb-2">
+                                <strong>Total documentos:</strong> {{ $stats['total'] }}
+                            </div> --}}
+
+                            <div class="doc-summary-split">
+                                <div class="doc-summary-card doc-summary-card--file">
+                                    <div class="doc-summary-head">
+                                        <span class="doc-summary-icon doc-summary-icon--file">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                                                 stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                                <polyline points="14 2 14 8 20 8"></polyline>
+                                            </svg>
+                                        </span>
+                                        <p class="doc-summary-title">Tipo de archivo</p>
+                                    </div>
+
+                                    <div class="doc-pill-row">
+                                        <span class="doc-pill doc-pill--neutral">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                                 stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                                <polyline points="14 2 14 8 20 8"></polyline>
+                                            </svg>
+                                            Total: {{ $stats['total'] }}
+                                        </span>
+
+                                        <span class="doc-pill doc-pill--file">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                                 stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                                <polyline points="14 2 14 8 20 8"></polyline>
+                                                <path d="M9 15h6"></path>
+                                            </svg>
+                                            PDF: {{ $stats['pdf'] }}
+                                        </span>
+
+                                        <span class="doc-pill doc-pill--file">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                                 stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                                <polyline points="14 2 14 8 20 8"></polyline>
+                                                <path d="M8 14l2 3 2-3 2 3 2-3"></path>
+                                            </svg>
+                                            DOCX: {{ $stats['docx'] }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="doc-summary-card doc-summary-card--extract">
+                                    <div class="doc-summary-head">
+                                        <span class="doc-summary-icon doc-summary-icon--extract">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                                                 stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                                <circle cx="11" cy="11" r="7"></circle>
+                                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                                <line x1="11" y1="8" x2="11" y2="14"></line>
+                                                <line x1="8" y1="11" x2="14" y2="11"></line>
+                                            </svg>
+                                        </span>
+                                        <p class="doc-summary-title">Forma de extracción</p>
+                                    </div>
+
+                                    <div class="doc-pill-row">
+                                        <span class="doc-pill doc-pill--extract">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                                 stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                                <polyline points="14 2 14 8 20 8"></polyline>
+                                                <line x1="8" y1="13" x2="16" y2="13"></line>
+                                                <line x1="8" y1="17" x2="14" y2="17"></line>
+                                            </svg>
+                                            Texto: {{ $stats['texto'] }}
+                                        </span>
+
+                                        <span class="doc-pill doc-pill--extract">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                                 stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M8 3H5a2 2 0 0 0-2 2v3"></path>
+                                                <path d="M16 3h3a2 2 0 0 1 2 2v3"></path>
+                                                <path d="M3 16v3a2 2 0 0 0 2 2h3"></path>
+                                                <path d="M16 21h3a2 2 0 0 0 2-2v-3"></path>
+                                                <path d="M12 8v8"></path>
+                                                <path d="M8 12h8"></path>
+                                            </svg>
+                                            OCR: {{ $stats['ocr'] }}
+                                        </span>
+
+                                        <span class="doc-pill doc-pill--extract">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                                 stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                                <polyline points="14 2 14 8 20 8"></polyline>
+                                                <path d="M8 12h1l1 4 1-4h1"></path>
+                                                <path d="M15 12v4"></path>
+                                            </svg>
+                                            Word: {{ $stats['word'] }}
+                                        </span>
+
+                                        <span class="doc-pill doc-pill--muted">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                                 stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                                <circle cx="12" cy="12" r="10"></circle>
+                                                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                                            </svg>
+                                            Sin texto: {{ $stats['sin_texto'] }}
+                                        </span>
+
+                                        <span class="doc-pill doc-pill--danger-soft">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                                 stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                                <line x1="12" y1="9" x2="12" y2="13"></line>
+                                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                            </svg>
+                                            Error: {{ $stats['error'] }}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

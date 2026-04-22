@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Contractual;
 use App\Http\Controllers\Controller;
 use App\Models\ChecklistRevisionContractual;
 use App\Models\ContradiccionRevisionContractual;
+use App\Models\DocumentoSnapshotRevisionContractual;
 use App\Models\HallazgoRevisionContractual;
 use App\Models\RevisionContractual;
 use App\Models\SnapshotRevisionContractual;
 use App\Services\Contractual\DocumentContradictionDetectorService;
+use App\Services\Contractual\DocumentTraceabilityService;
 use App\Services\Contractual\OpenAIRevisionContractualService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +20,8 @@ class AnalisisRevisionContractualController extends Controller
     public function store(
         RevisionContractual $revision,
         OpenAIRevisionContractualService $service,
-        DocumentContradictionDetectorService $contradictionDetector
+        DocumentContradictionDetectorService $contradictionDetector,
+        DocumentTraceabilityService $traceabilityService
     ): RedirectResponse {
         \Log::info('Entró al análisis', [
             'revision_id' => $revision->id,
@@ -81,6 +84,8 @@ class AnalisisRevisionContractualController extends Controller
                 'es_actual' => true,
                 'user_id' => auth()->id(),
             ]);
+
+            $traceabilityService->registerSnapshotDocuments($revision, $snapshot);
 
             foreach (($jsonFinal['hallazgos'] ?? []) as $hallazgo) {
                 $titulo = $hallazgo['titulo']
@@ -167,7 +172,7 @@ class AnalisisRevisionContractualController extends Controller
 
             DB::commit();
 
-            \Log::info('Snapshot IA creado con contradicciones persistidas', [
+            \Log::info('Snapshot IA creado con trazabilidad documental', [
                 'snapshot_id' => $snapshot->id,
                 'revision_id' => $revision->id,
                 'numero_version' => $snapshot->numero_version,

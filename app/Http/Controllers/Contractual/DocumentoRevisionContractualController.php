@@ -128,6 +128,34 @@ class DocumentoRevisionContractualController extends Controller
         return back()->with('success', $resultado['mensaje']);
     }
 
+    public function reprocess(
+        RevisionContractual $revision,
+        DocumentoRevisionContractual $documento,
+        DocumentoTextPipelineService $pipelineService
+    ): RedirectResponse {
+        if ((int) $documento->revision_contractual_id !== (int) $revision->id) {
+            abort(404);
+        }
+
+        if (!$documento->ruta || !Storage::disk('public')->exists($documento->ruta)) {
+            return back()->with('error', 'El archivo no existe en disco y no puede reprocesarse.');
+        }
+
+        $extension = strtolower((string) $documento->extension);
+        $resultado = $pipelineService->process($documento->ruta, $extension);
+
+        $documento->update([
+            'texto_extraido' => $resultado['texto_extraido'],
+            'texto_ocr' => $resultado['texto_ocr'],
+            'extraccion_estado' => $resultado['extraccion_estado'],
+            'ocr_estado' => $resultado['ocr_estado'],
+            'tiene_texto_extraible' => $resultado['tiene_texto_extraible'],
+            'fuente_texto' => $resultado['fuente_texto'],
+        ]);
+
+        return back()->with('success', 'Documento reprocesado correctamente.');
+    }
+
     public function destroy(RevisionContractual $revision, DocumentoRevisionContractual $documento): RedirectResponse
     {
         if ((int) $documento->revision_contractual_id !== (int) $revision->id) {

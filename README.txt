@@ -1,28 +1,45 @@
-Topnavbar con breadcrumbs dinámicos
+Trazabilidad documental entre documentos y snapshots
 
 Incluye:
-- topnavbar.blade.php actualizado
-- TopnavbarBreadcrumbsComposer.php
-- ViewComposerServiceProvider.php
+- migración pivote documento_snapshot_revision_contractual
+- modelo DocumentoSnapshotRevisionContractual
+- servicio DocumentTraceabilityService
+- AnalisisRevisionContractualController actualizado para registrar trazabilidad
+- vista documento/show con historial de snapshots usados
+- partial para mostrar documentos usados dentro del snapshot
 
-Qué hace:
-- agrega breadcrumbs según la ruta actual
-- mantiene alineación con el contenido
-- funciona para dashboard, usuarios, revisiones, documentos y snapshots
+Ajustes manuales adicionales recomendados:
 
-Instalación:
-1. Copiar archivos respetando rutas
-2. Registrar el provider en config/app.php:
-   App\Providers\ViewComposerServiceProvider::class,
-3. En app.blade.php mantener el topnavbar dentro de:
-   <div id="content" class="main-content">
-       <div class="layout-px-spacing">
-           @include('layouts.theme.partials.topnavbar')
-           @yield('content')
-       </div>
-   </div>
-4. Ejecutar:
-   php artisan optimize:clear
+1. En DocumentoRevisionContractual model agregar:
+   public function snapshotsTraza()
+   {
+       return $this->hasMany(DocumentoSnapshotRevisionContractual::class, 'documento_revision_contractual_id')
+           ->with(['snapshot', 'usuario'])
+           ->latest();
+   }
 
-Respaldo repo:
-Después de aplicar esto y verificar visualmente, sí conviene hacer commit y push.
+2. En SnapshotRevisionContractual model agregar:
+   public function documentosTraza()
+   {
+       return $this->hasMany(DocumentoSnapshotRevisionContractual::class, 'snapshot_revision_contractual_id')
+           ->with(['documento', 'usuario'])
+           ->latest();
+   }
+
+3. En DocumentoRevisionContractualController@show cargar:
+   $documento->load(['snapshotsTraza.snapshot', 'snapshotsTraza.usuario']);
+
+4. En SnapshotRevisionContractualController@show cargar:
+   $snapshot->load(['documentosTraza.documento', 'documentosTraza.usuario']);
+
+5. En la vista del snapshot incluir:
+   @include('contractual.snapshots.partials.trazabilidad_documentos')
+
+Pasos:
+- copiar archivos
+- php artisan migrate
+- composer dump-autoload
+- php artisan optimize:clear
+
+Próximo respaldo Git recomendado:
+- después de validar que un snapshot registra correctamente sus documentos usados
