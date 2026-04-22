@@ -19,6 +19,7 @@
         ];
 
         $resumen = $snapshot->json_resultado['resumen'] ?? [];
+        $contradicciones = $snapshot->json_resultado['contradicciones_documentales'] ?? [];
 
         $existencia = $snapshot->checklist->where('tipo_checklist', 'existencia')->sortBy('orden');
         $coherencia = $snapshot->checklist->where('tipo_checklist', 'coherencia')->sortBy('orden');
@@ -179,6 +180,36 @@
         </div>
     </div>
 
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-danger text-white">
+            <strong>Contradicciones documentales detectadas</strong>
+        </div>
+        <div class="card-body">
+            @forelse($contradicciones as $c)
+                <div class="border rounded p-3 mb-3">
+                    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
+                        <h6 class="fw-bold mb-0">{{ $c['etiqueta'] ?? 'Campo sin etiqueta' }}</h6>
+                        <span class="badge {{ ($c['criticidad'] ?? '') === 'alta' ? 'bg-danger' : 'bg-warning text-dark' }}">
+                            {{ strtoupper($c['criticidad'] ?? 'media') }}
+                        </span>
+                    </div>
+                    <p class="mb-2">{{ $c['descripcion'] ?? '-' }}</p>
+                    <div class="small text-muted mb-2">Valores detectados</div>
+                    <ul class="mb-3">
+                        @foreach(($c['valores'] ?? []) as $v)
+                            <li><strong>{{ $v['documento'] ?? 'Documento' }}:</strong> {{ $v['valor'] ?? '-' }}</li>
+                        @endforeach
+                    </ul>
+                    <p class="mb-0"><strong>Recomendación:</strong> {{ $c['recomendacion'] ?? '-' }}</p>
+                </div>
+            @empty
+                <div class="alert alert-light border mb-0">
+                    No se detectaron contradicciones documentales heurísticas en este snapshot.
+                </div>
+            @endforelse
+        </div>
+    </div>
+
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-2">
         <h5 class="fw-bold mb-0">Hallazgos</h5>
         <div class="small text-muted">Total: {{ $snapshot->hallazgos->count() }}</div>
@@ -223,11 +254,7 @@
         @endforelse
     </div>
 
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-2">
-        <h5 class="fw-bold mb-0">Checklist por capas</h5>
-        <div class="small text-muted">Total: {{ $snapshot->checklist->count() }}</div>
-    </div>
-
+    {{-- Mantén aquí tus includes de checklist por capas existentes --}}
     @include('contractual.snapshots.partials.checklist_table', [
         'titulo' => 'Existencia documental',
         'subtitulo' => 'Verifica si el antecedente o documento está presente en el expediente.',

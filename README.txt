@@ -1,18 +1,28 @@
-Optimización de vistas snapshot y comparador
+Topnavbar con breadcrumbs dinámicos
 
 Incluye:
-- show.blade.php optimizado
-- compare.blade.php optimizado
-- partial checklist_table.blade.php actualizado
-- partials compare_hallazgos y compare_checklist_simple
+- topnavbar.blade.php actualizado
+- TopnavbarBreadcrumbsComposer.php
+- ViewComposerServiceProvider.php
 
-Objetivo:
-- Mejorar legibilidad
-- Ordenar navegación
-- Integrar exportación Word
-- Hacer más institucional la experiencia de uso
+Qué hace:
+- agrega breadcrumbs según la ruta actual
+- mantiene alineación con el contenido
+- funciona para dashboard, usuarios, revisiones, documentos y snapshots
 
-Pasos:
-1. Copiar archivos respetando rutas.
-2. Ejecutar:
+Instalación:
+1. Copiar archivos respetando rutas
+2. Registrar el provider en config/app.php:
+   App\Providers\ViewComposerServiceProvider::class,
+3. En app.blade.php mantener el topnavbar dentro de:
+   <div id="content" class="main-content">
+       <div class="layout-px-spacing">
+           @include('layouts.theme.partials.topnavbar')
+           @yield('content')
+       </div>
+   </div>
+4. Ejecutar:
    php artisan optimize:clear
+
+Respaldo repo:
+Después de aplicar esto y verificar visualmente, sí conviene hacer commit y push.

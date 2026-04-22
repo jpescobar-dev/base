@@ -1,236 +1,145 @@
 @extends('layouts.theme.app')
 
-@section('styles')
-    <link rel="stylesheet" type="text/css" href="{{ asset('plugins/table/datatable/datatables.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('plugins/table/datatable/dt-global_style.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('plugins/table/datatable/custom_dt_html5.css') }}">
-    <link href="{{ asset('assets/css/scrollspyNav.css') }}" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/forms/theme-checkbox-radio.css') }}">
-    <link href="{{ asset('assets/css/tables/table-basic.css') }}" rel="stylesheet" type="text/css" />
-
-    <style>
-        table.table-hover tbody tr:hover td {
-            color: #46576f;
-            font-weight: 500;
-        }
-
-        .table .btn.btn-sm {
-            padding: 0.30rem 0.55rem;
-            line-height: 1;
-        }
-
-        .table .btn svg {
-            vertical-align: middle;
-        }
-
-        .table .action-buttons {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 6px;
-        }
-    </style>
-@endsection
-
-@section('title', 'Documentos de Revisión')
-@section('title2', 'Índice')
+@section('title', 'Documentos Asociados')
+@section('title2', 'Documentos')
 
 @section('content')
-<div class="widget-content widget-content-area br-6 mt-2 mb-2">
-    <div class="row mb-4">
-        <div class="col-md-4 d-flex align-items-center"></div>
+@php
+    $docs = $revision->documentos->sortByDesc('id');
+@endphp
 
-        <div class="col-md-4 text-center">
-            <h4 class="mb-0">Documentos de la Revisión #{{ $revision->id }}</h4>
-            <small class="text-muted">{{ $revision->titulo }}</small>
+<div class="widget-content widget-content-area br-6 mt-2 mb-2">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div>
+            <h4 class="mb-1">Documentos Asociados</h4>
+            <div class="text-muted">Revisión #{{ $revision->id }} · {{ $revision->titulo }}</div>
         </div>
 
-        <div class="col-md-4 text-right">
-            <a href="{{ route('contractual.revisiones.show', $revision) }}"
-               class="btn btn-outline-secondary btn-sm"
-               title="Volver a la revisión">
-                <svg xmlns="http://www.w3.org/2000/svg"
-                     width="22"
-                     height="22"
-                     viewBox="0 0 24 24"
-                     fill="none"
-                     stroke="currentColor"
-                     stroke-width="1.5"
-                     stroke-linecap="round"
-                     stroke-linejoin="round"
-                     class="feather feather-arrow-left-circle">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <polyline points="12 8 8 12 12 16"></polyline>
-                    <line x1="16" y1="12" x2="8" y2="12"></line>
-                </svg>
+        <div class="d-flex gap-2">
+            <a href="{{ route('contractual.revisiones.show', $revision) }}" class="btn btn-outline-secondary btn-sm">
+                Volver
             </a>
         </div>
     </div>
 
-    @if (session('success'))
-        <div class="alert alert-success mb-3" role="alert">
-            {{ session('success') }}
-        </div>
-    @endif
+    <div class="widget widget-table-one">
+        <div class="widget-heading d-flex justify-content-between align-items-center">
+            <h5 class="">Listado completo</h5>
 
-    @if (session('error'))
-        <div class="alert alert-danger mb-3" role="alert">
-            {{ session('error') }}
-        </div>
-    @endif
+            <div class="d-flex flex-wrap gap-2">
+                <select id="filterType" class="form-control form-control-sm" style="min-width: 180px;">
+                    <option value="">Todos los tipos</option>
+                    <option value="pdf">PDF</option>
+                    <option value="docx">DOCX</option>
+                </select>
 
-    <div class="row mt-4">
-        <div class="col-xl-12">
-            <div class="widget widget-table-one">
-                <div class="table-responsive">
-                    <table id="html5-extension" class="table table-hover table-striped" style="width:100%">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Nombre original</th>
-                                <th>Tipo</th>
-                                <th>MIME</th>
-                                <th>Tamaño</th>
-                                <th>Usuario</th>
-                                <th>Fecha creación</th>
-                                <th class="text-center">Acciones</th>
+                <select id="filterSource" class="form-control form-control-sm" style="min-width: 180px;">
+                    <option value="">Todas las fuentes</option>
+                    <option value="texto">Texto</option>
+                    <option value="ocr">OCR</option>
+                    <option value="word">Word</option>
+                </select>
+
+                <select id="filterStatus" class="form-control form-control-sm" style="min-width: 220px;">
+                    <option value="">Todos los estados</option>
+                    <option value="EXTRAIDO">EXTRAIDO</option>
+                    <option value="EXTRAIDO_OCR">EXTRAIDO_OCR</option>
+                    <option value="SIN_TEXTO">SIN_TEXTO</option>
+                    <option value="ERROR_EXTRACCION">ERROR_EXTRACCION</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="widget-content">
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered mb-0" id="tablaDocumentos">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre original</th>
+                            <th>Tipo</th>
+                            <th>Tamaño</th>
+                            <th>Estado</th>
+                            <th>Usuario</th>
+                            <th>Fecha</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($docs as $documento)
+                            @php
+                                $ext = strtolower($documento->extension ?? '');
+                                $estado = strtoupper($documento->extraccion_estado ?? '-');
+                            @endphp
+                            <tr data-type="{{ $ext }}" data-source="{{ strtolower($documento->fuente_texto ?? '') }}" data-status="{{ $estado }}">
+                                <td>{{ $documento->id }}</td>
+                                <td>{{ $documento->nombre_original }}</td>
+                                <td>
+                                    {{ $documento->tipo_documento ?: strtoupper($documento->extension ?? '-') }}
+                                    <div class="small text-muted">{{ strtoupper($documento->fuente_texto ?? '-') }}</div>
+                                </td>
+                                <td>
+                                    @if(!is_null($documento->peso_bytes))
+                                        {{ number_format($documento->peso_bytes / 1024, 1, ',', '.') }} KB
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                                <td>
+                                    @php
+                                        $cls = 'badge-light border';
+                                        if ($documento->extraccion_estado === 'EXTRAIDO') $cls = 'badge-success';
+                                        elseif ($documento->extraccion_estado === 'EXTRAIDO_OCR') $cls = 'badge-warning';
+                                        elseif ($documento->extraccion_estado === 'SIN_TEXTO') $cls = 'badge-secondary';
+                                        elseif ($documento->extraccion_estado === 'ERROR_EXTRACCION') $cls = 'badge-danger';
+                                    @endphp
+                                    <span class="badge {{ $cls }}">{{ $estado }}</span>
+                                </td>
+                                <td>{{ $documento->usuario->name ?? 'N/D' }}</td>
+                                <td>{{ optional($documento->created_at)->format('d-m-Y H:i') }}</td>
+                                <td class="text-center">
+                                    <div class="d-inline-flex gap-2">
+                                        <a href="{{ route('contractual.revisiones.documentos.show', [$revision, $documento]) }}"
+                                           target="_blank"
+                                           class="btn btn-sm btn-outline-primary">
+                                            Ver
+                                        </a>
+                                        <a href="{{ route('contractual.revisiones.documentos.download', [$revision, $documento]) }}"
+                                           class="btn btn-sm btn-outline-secondary">
+                                            Descargar
+                                        </a>
+                                    </div>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($revision->documentos as $documento)
-                                <tr>
-                                    <td>{{ $documento->id }}</td>
-                                    <td>{{ $documento->nombre_original }}</td>
-                                    <td>{{ $documento->tipo_documento ?: '-' }}</td>
-                                    <td>{{ $documento->mime_type ?: '-' }}</td>
-                                    <td>
-                                        @if($documento->tamano)
-                                            {{ number_format($documento->tamano / 1024, 2) }} KB
-                                        @else
-                                            -
-                                        @endif
-                                    </td>
-                                    <td>{{ $documento->usuario->name ?? 'N/D' }}</td>
-                                    <td>{{ $documento->created_at ? $documento->created_at->format('d-m-Y H:i') : '-' }}</td>
-                                    <td class="text-center">
-                                        <div class="action-buttons">
-                                            <a href="{{ asset('storage/' . $documento->ruta) }}"
-                                               target="_blank"
-                                               class="btn btn-sm btn-outline-primary"
-                                               title="Ver">
-                                                <svg xmlns="http://www.w3.org/2000/svg"
-                                                     width="16"
-                                                     height="16"
-                                                     viewBox="0 0 24 24"
-                                                     fill="none"
-                                                     stroke="currentColor"
-                                                     stroke-width="2"
-                                                     stroke-linecap="round"
-                                                     stroke-linejoin="round"
-                                                     class="feather feather-eye">
-                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                    <circle cx="12" cy="12" r="3"></circle>
-                                                </svg>
-                                            </a>
-
-                                            <form action="{{ route('contractual.revisiones.documentos.destroy', [$revision, $documento]) }}"
-                                                  method="POST"
-                                                  class="d-inline"
-                                                  onsubmit="return confirm('¿Está seguro de eliminar este documento?');">
-                                                @csrf
-                                                @method('DELETE')
-
-                                                <button type="submit"
-                                                        class="btn btn-sm btn-outline-danger"
-                                                        title="Eliminar">
-                                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                                         width="16"
-                                                         height="16"
-                                                         viewBox="0 0 24 24"
-                                                         fill="none"
-                                                         stroke="currentColor"
-                                                         stroke-width="2"
-                                                         stroke-linecap="round"
-                                                         stroke-linejoin="round"
-                                                         class="feather feather-trash-2">
-                                                        <polyline points="3 6 5 6 21 6"></polyline>
-                                                        <path d="M19 6l-1 14H6L5 6"></path>
-                                                        <path d="M10 11v6"></path>
-                                                        <path d="M14 11v6"></path>
-                                                        <path d="M9 6V4h6v2"></path>
-                                                    </svg>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="8" class="text-center text-muted">No existen documentos cargados para esta revisión.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+                        @empty
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">No existen documentos asociados.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 </div>
-@endsection
 
-@section('scripts')
-    <script src="{{ asset('plugins/table/datatable/datatables.js') }}"></script>
-    <script src="{{ asset('plugins/table/datatable/button-ext/dataTables.buttons.min.js') }}"></script>
-    <script src="{{ asset('plugins/table/datatable/button-ext/jszip.min.js') }}"></script>
-    <script src="{{ asset('plugins/table/datatable/button-ext/buttons.html5.min.js') }}"></script>
-    <script src="{{ asset('plugins/table/datatable/button-ext/buttons.print.min.js') }}"></script>
-    <script src="{{ asset('plugins/highlight/highlight.pack.js') }}"></script>
-    <script src="{{ asset('assets/js/custom.js') }}"></script>
-    <script src="{{ asset('assets/js/scrollspyNav.js') }}"></script>
+<script>
+(function () {
+    const type = document.getElementById('filterType');
+    const source = document.getElementById('filterSource');
+    const status = document.getElementById('filterStatus');
+    const rows = Array.from(document.querySelectorAll('#tablaDocumentos tbody tr'));
 
-    <script>
-        $(document).ready(function () {
-            if ($.fn.DataTable.isDataTable('#html5-extension')) {
-                $('#html5-extension').DataTable().destroy();
-            }
-
-            $('#html5-extension').DataTable({
-                dom: `
-                    <'row mb-3'
-                        <'col-md-3'l>
-                        <'col-md-6 text-center'B>
-                        <'col-md-3'f>
-                    >
-                    <'row'
-                        <'col-md-12'tr>
-                    >
-                    <'row'
-                        <'col-md-5'i>
-                        <'col-md-7'p>
-                    >`,
-                buttons: [
-                    { extend: 'copy', className: 'btn' },
-                    { extend: 'csv', className: 'btn' },
-                    { extend: 'excel', className: 'btn' },
-                    { extend: 'print', className: 'btn' }
-                ],
-                oLanguage: {
-                    oPaginate: {
-                        sPrevious: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path d="M15 18l-6-6 6-6"/></svg>',
-                        sNext: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path d="M9 18l6-6-6-6"/></svg>'
-                    },
-                    sInfo: "Mostrando página _PAGE_ de _PAGES_",
-                    sSearch: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
-                    sSearchPlaceholder: "Buscar...",
-                    sLengthMenu: "Resultados : _MENU_",
-                    sZeroRecords: "No se encontraron registros",
-                    sInfoEmpty: "No hay registros disponibles",
-                    sInfoFiltered: "(filtrado de _MAX_ registros totales)"
-                },
-                stripeClasses: [],
-                lengthMenu: [10, 20, 50],
-                pageLength: 10
-            });
+    function applyFilters() {
+        rows.forEach(row => {
+            const okType = !type.value || row.dataset.type === type.value;
+            const okSource = !source.value || row.dataset.source === source.value;
+            const okStatus = !status.value || row.dataset.status === status.value;
+            row.style.display = (okType && okSource && okStatus) ? '' : 'none';
         });
-    </script>
+    }
+
+    [type, source, status].forEach(el => el && el.addEventListener('change', applyFilters));
+})();
+</script>
 @endsection

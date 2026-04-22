@@ -29,19 +29,21 @@
     @yield('styles')
 </head>
 <body class="sidebar-noneoverflow">
-    @include('layouts.theme.partials.header')
+   
 
     <div class="main-container" id="container">
         <div class="overlay"></div>
         <div class="search-overlay"></div>
 
         <!-- BEGIN TOPBAR -->
-        @include('layouts.theme.partials.topnavbar')
+     
         <!-- END TOPBAR -->
 
         <!-- BEGIN CONTENT AREA -->
         <div id="content" class="main-content">
             <div class="layout-px-spacing">
+                 @include('layouts.theme.partials.header')
+                @include('layouts.theme.partials.topnavbar')
                 @yield('content')
             </div>
         </div>

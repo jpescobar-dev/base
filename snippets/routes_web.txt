@@ -1,11 +1,19 @@
-use App\Http\Controllers\Contractual\ExportRevisionContractualController;
+use App\Http\Controllers\Contractual\DocumentoRevisionContractualController;
 
-Route::get(
-    'contractual/revisiones/{revision}/snapshots/{snapshot}/export-word',
-    [ExportRevisionContractualController::class, 'snapshot']
-)->name('contractual.revisiones.snapshots.export-word');
+Route::get('revisiones/{revision}/documentos', [DocumentoRevisionContractualController::class, 'index'])
+    ->name('contractual.revisiones.documentos.index');
 
-Route::get(
-    'contractual/revisiones/{revision}/snapshots/compare/{snapshot1}/{snapshot2}/export-word',
-    [ExportRevisionContractualController::class, 'compare']
-)->name('contractual.revisiones.snapshots.compare.export-word');
+Route::get('revisiones/{revision}/documentos/{documento}', [DocumentoRevisionContractualController::class, 'show'])
+    ->name('contractual.revisiones.documentos.show');
+
+Route::get('revisiones/{revision}/documentos/{documento}/preview', [DocumentoRevisionContractualController::class, 'preview'])
+    ->name('contractual.revisiones.documentos.preview');
+
+Route::get('revisiones/{revision}/documentos/{documento}/download', [DocumentoRevisionContractualController::class, 'download'])
+    ->name('contractual.revisiones.documentos.download');
+
+Route::post('revisiones/{revision}/documentos', [DocumentoRevisionContractualController::class, 'store'])
+    ->name('contractual.revisiones.documentos.store');
+
+Route::delete('revisiones/{revision}/documentos/{documento}', [DocumentoRevisionContractualController::class, 'destroy'])
+    ->name('contractual.revisiones.documentos.destroy');

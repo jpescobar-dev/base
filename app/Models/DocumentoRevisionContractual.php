@@ -12,22 +12,22 @@ class DocumentoRevisionContractual extends Model
     protected $fillable = [
         'revision_contractual_id',
         'nombre_original',
-        'nombre_archivo',
         'ruta',
         'mime_type',
-        'tamano',
         'extension',
-        'tipo_documento',
+        'peso_bytes',
         'hash_archivo',
+        'tipo_documento',
         'texto_extraido',
+        'texto_ocr',
         'extraccion_estado',
+        'ocr_estado',
         'tiene_texto_extraible',
-        'es_vigente',
+        'fuente_texto',
         'user_id',
     ];
 
     protected $casts = [
-        'es_vigente' => 'boolean',
         'tiene_texto_extraible' => 'boolean',
     ];
 

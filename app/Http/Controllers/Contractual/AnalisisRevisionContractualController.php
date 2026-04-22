@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Contractual;
 
 use App\Http\Controllers\Controller;
 use App\Models\ChecklistRevisionContractual;
+use App\Models\ContradiccionRevisionContractual;
 use App\Models\HallazgoRevisionContractual;
 use App\Models\RevisionContractual;
 use App\Models\SnapshotRevisionContractual;
+use App\Services\Contractual\DocumentContradictionDetectorService;
 use App\Services\Contractual\OpenAIRevisionContractualService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +17,8 @@ class AnalisisRevisionContractualController extends Controller
 {
     public function store(
         RevisionContractual $revision,
-        OpenAIRevisionContractualService $service
+        OpenAIRevisionContractualService $service,
+        DocumentContradictionDetectorService $contradictionDetector
     ): RedirectResponse {
         \Log::info('Entró al análisis', [
             'revision_id' => $revision->id,
@@ -30,7 +33,6 @@ class AnalisisRevisionContractualController extends Controller
         ]);
 
         $outputText = data_get($data, 'output.0.content.0.text');
-
         $decoded = null;
 
         if ($outputText) {
@@ -58,6 +60,8 @@ class AnalisisRevisionContractualController extends Controller
         }
 
         $jsonFinal = $decoded;
+        $contradicciones = $contradictionDetector->detect($revision);
+        $jsonFinal['contradicciones_documentales'] = $contradicciones['contradicciones'] ?? [];
 
         $ultimaVersion = $revision->snapshots()->max('numero_version') ?? 0;
         $nuevaVersion = $ultimaVersion + 1;
@@ -115,6 +119,20 @@ class AnalisisRevisionContractualController extends Controller
                 ]);
             }
 
+            foreach (($jsonFinal['contradicciones_documentales'] ?? []) as $item) {
+                ContradiccionRevisionContractual::create([
+                    'snapshot_revision_contractual_id' => $snapshot->id,
+                    'campo' => $item['campo'] ?? null,
+                    'etiqueta' => $item['etiqueta'] ?? 'Campo sin etiqueta',
+                    'criticidad' => $item['criticidad'] ?? 'media',
+                    'descripcion' => $item['descripcion'] ?? null,
+                    'valores_detectados' => $item['valores'] ?? [],
+                    'recomendacion' => $item['recomendacion'] ?? null,
+                    'documento_preferente' => $this->resolverDocumentoPreferente($item['valores'] ?? []),
+                    'user_id' => auth()->id(),
+                ]);
+            }
+
             $orden = 1;
 
             if (isset($jsonFinal['checklist']['existencia']) || isset($jsonFinal['checklist']['coherencia']) || isset($jsonFinal['checklist']['cumplimiento'])) {
@@ -149,11 +167,12 @@ class AnalisisRevisionContractualController extends Controller
 
             DB::commit();
 
-            \Log::info('Snapshot IA creado con hallazgos y checklist', [
+            \Log::info('Snapshot IA creado con contradicciones persistidas', [
                 'snapshot_id' => $snapshot->id,
                 'revision_id' => $revision->id,
                 'numero_version' => $snapshot->numero_version,
                 'hallazgos_count' => count($jsonFinal['hallazgos'] ?? []),
+                'contradicciones_count' => count($jsonFinal['contradicciones_documentales'] ?? []),
             ]);
 
             return redirect()
@@ -169,6 +188,33 @@ class AnalisisRevisionContractualController extends Controller
 
             return back()->with('error', 'Ocurrió un error al guardar el análisis IA.');
         }
+    }
+
+    protected function resolverDocumentoPreferente(array $valores): ?string
+    {
+        $jerarquia = [
+            'BASES_ADMINISTRATIVAS_GENERALES' => 1,
+            'BASES_ADMINISTRATIVAS_ESPECIALES' => 2,
+            'BASES_TECNICAS' => 3,
+            'RESOLUCION_ADJUDICACION' => 4,
+            'CONTRATO' => 5,
+            'OFERTA_TECNICA' => 6,
+            'OFERTA_ECONOMICA' => 7,
+            'GARANTIA' => 8,
+            'OTRO' => 9,
+        ];
+
+        if (empty($valores)) {
+            return null;
+        }
+
+        usort($valores, function ($a, $b) use ($jerarquia) {
+            $ja = $jerarquia[$a['tipo_documento'] ?? 'OTRO'] ?? 99;
+            $jb = $jerarquia[$b['tipo_documento'] ?? 'OTRO'] ?? 99;
+            return $ja <=> $jb;
+        });
+
+        return $valores[0]['documento'] ?? null;
     }
 
     protected function buildResumenTexto(array $jsonFinal): string

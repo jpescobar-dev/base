@@ -1,0 +1,7 @@
+// INTEGRACIÓN OPCIONAL EN TU CONTROLLER DE ANÁLISIS
+
+use App\Services\Contractual\DocumentContradictionDetectorService;
+
+// Antes de crear el snapshot
+$contradicciones = app(DocumentContradictionDetectorService::class)->detect($revision);
+$jsonFinal['contradicciones_documentales'] = $contradicciones['contradicciones'] ?? [];

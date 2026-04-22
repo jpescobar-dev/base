@@ -10,8 +10,6 @@ use App\Http\Controllers\Contractual\SnapshotRevisionContractualController;
 use App\Http\Controllers\Contractual\AnalisisRevisionContractualController;
 use App\Http\Controllers\Contractual\ExportRevisionContractualController;
 
-
-
 Route::get('/', function () {
     return redirect()->route('login');
 });
@@ -41,8 +39,6 @@ Route::middleware(['auth', 'permission:ver dashboard'])->group(function () {
     })->name('dashboard');
 });
 
-
-
 // ruta web ESTADOS
 Route::middleware(['auth'])->group(function () {
     Route::get('/estados', [EstadoController::class, 'index'])
@@ -51,7 +47,6 @@ Route::middleware(['auth'])->group(function () {
 
 // ruta API Estados
 Route::middleware('auth:sanctum')->get('/estados', [EstadoController::class, 'index']);
-
 
 Route::middleware(['auth'])
     ->prefix('contractual')
@@ -63,32 +58,59 @@ Route::middleware(['auth'])
                 'revisiones' => 'revision',
             ]);
 
-        Route::get('revisiones/{revision}/documentos', [DocumentoRevisionContractualController::class, 'index'])
-            ->name('revisiones.documentos.index');
+        // documentos
+        Route::get(
+            'revisiones/{revision}/documentos',
+            [DocumentoRevisionContractualController::class, 'index']
+        )->name('revisiones.documentos.index');
 
-        Route::post('revisiones/{revision}/documentos', [DocumentoRevisionContractualController::class, 'store'])
-            ->name('revisiones.documentos.store');
+        Route::post(
+            'revisiones/{revision}/documentos',
+            [DocumentoRevisionContractualController::class, 'store']
+        )->name('revisiones.documentos.store');
 
-        Route::delete('revisiones/{revision}/documentos/{documento}', [DocumentoRevisionContractualController::class, 'destroy'])
-            ->name('revisiones.documentos.destroy');
+        Route::get(
+            'revisiones/{revision}/documentos/{documento}',
+            [DocumentoRevisionContractualController::class, 'show']
+        )->name('revisiones.documentos.show');
 
-    // rutas snapshots
-        Route::get('revisiones/{revision}/snapshots', [SnapshotRevisionContractualController::class, 'index'])
-            ->name('revisiones.snapshots.index');
+        Route::get(
+            'revisiones/{revision}/documentos/{documento}/preview',
+            [DocumentoRevisionContractualController::class, 'preview']
+        )->name('revisiones.documentos.preview');
 
-        Route::post('revisiones/{revision}/snapshots', [SnapshotRevisionContractualController::class, 'store'])
-            ->name('revisiones.snapshots.store');
+        Route::get(
+            'revisiones/{revision}/documentos/{documento}/download',
+            [DocumentoRevisionContractualController::class, 'download']
+        )->name('revisiones.documentos.download');
 
-        Route::get('revisiones/{revision}/snapshots/{snapshot}', [SnapshotRevisionContractualController::class, 'show'])
-            ->name('revisiones.snapshots.show');
+        Route::delete(
+            'revisiones/{revision}/documentos/{documento}',
+            [DocumentoRevisionContractualController::class, 'destroy']
+        )->name('revisiones.documentos.destroy');
 
-          
+        // snapshots
+        Route::get(
+            'revisiones/{revision}/snapshots',
+            [SnapshotRevisionContractualController::class, 'index']
+        )->name('revisiones.snapshots.index');
 
-        Route::post('revisiones/{revision}/analizar', [AnalisisRevisionContractualController::class, 'store'])->name('revisiones.analizar');
+        Route::post(
+            'revisiones/{revision}/snapshots',
+            [SnapshotRevisionContractualController::class, 'store']
+        )->name('revisiones.snapshots.store');
 
+        Route::get(
+            'revisiones/{revision}/snapshots/{snapshot}',
+            [SnapshotRevisionContractualController::class, 'show']
+        )->name('revisiones.snapshots.show');
 
+        Route::post(
+            'revisiones/{revision}/analizar',
+            [AnalisisRevisionContractualController::class, 'store']
+        )->name('revisiones.analizar');
 
-Route::get(
+        Route::get(
             'revisiones/{revision}/snapshots/{snapshot}/export-word',
             [ExportRevisionContractualController::class, 'snapshot']
         )->name('revisiones.snapshots.export-word');
@@ -97,13 +119,6 @@ Route::get(
             'revisiones/{revision}/snapshots/compare/{snapshot1}/{snapshot2}/export-word',
             [ExportRevisionContractualController::class, 'compare']
         )->name('revisiones.snapshots.compare.export-word');
-            });
+    });
 
-
-
-
-require __DIR__.'/auth.php';
-
-
-
-
+require __DIR__ . '/auth.php';

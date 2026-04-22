@@ -6,85 +6,126 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Contractual\StoreDocumentoRevisionContractualRequest;
 use App\Models\DocumentoRevisionContractual;
 use App\Models\RevisionContractual;
-use App\Services\Contractual\PdfTextExtractorService;
+use App\Services\Contractual\DocumentoTextPipelineService;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
-use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class DocumentoRevisionContractualController extends Controller
 {
     public function index(RevisionContractual $revision): View
     {
-        $revision->load(['documentos.usuario', 'estado', 'usuario']);
+        $revision->load(['documentos.usuario']);
 
         return view('contractual.documentos.index', compact('revision'));
+    }
+
+    public function show(RevisionContractual $revision, DocumentoRevisionContractual $documento)
+    {
+        if ((int) $documento->revision_contractual_id !== (int) $revision->id) {
+            abort(404);
+        }
+
+        if (!$documento->ruta || !Storage::disk('public')->exists($documento->ruta)) {
+            abort(404, 'El archivo no existe en disco.');
+        }
+
+        $extension = strtolower((string) $documento->extension);
+        $absolutePath = Storage::disk('public')->path($documento->ruta);
+
+        if ($extension === 'pdf') {
+            return view('contractual.documentos.show', compact('revision', 'documento'));
+        }
+
+        return response()->download(
+            $absolutePath,
+            $documento->nombre_original,
+            ['Content-Type' => $documento->mime_type ?: mime_content_type($absolutePath)]
+        );
+    }
+
+    public function preview(RevisionContractual $revision, DocumentoRevisionContractual $documento): BinaryFileResponse
+    {
+        if ((int) $documento->revision_contractual_id !== (int) $revision->id) {
+            abort(404);
+        }
+
+        if (!$documento->ruta || !Storage::disk('public')->exists($documento->ruta)) {
+            abort(404, 'El archivo no existe en disco.');
+        }
+
+        $absolutePath = Storage::disk('public')->path($documento->ruta);
+
+        return response()->file($absolutePath, [
+            'Content-Type' => $documento->mime_type ?: mime_content_type($absolutePath),
+            'Content-Disposition' => 'inline; filename="' . ($documento->nombre_original ?: basename($absolutePath)) . '"',
+        ]);
+    }
+
+    public function download(RevisionContractual $revision, DocumentoRevisionContractual $documento): BinaryFileResponse
+    {
+        if ((int) $documento->revision_contractual_id !== (int) $revision->id) {
+            abort(404);
+        }
+
+        if (!$documento->ruta || !Storage::disk('public')->exists($documento->ruta)) {
+            abort(404, 'El archivo no existe en disco.');
+        }
+
+        $absolutePath = Storage::disk('public')->path($documento->ruta);
+
+        return response()->download(
+            $absolutePath,
+            $documento->nombre_original,
+            ['Content-Type' => $documento->mime_type ?: mime_content_type($absolutePath)]
+        );
     }
 
     public function store(
         StoreDocumentoRevisionContractualRequest $request,
         RevisionContractual $revision,
-        PdfTextExtractorService $extractor
+        DocumentoTextPipelineService $pipelineService
     ): RedirectResponse {
         $archivo = $request->file('archivo');
-
-        $nombreOriginal = $archivo->getClientOriginalName();
         $extension = strtolower($archivo->getClientOriginalExtension());
-        $mimeType = $archivo->getMimeType();
-        $tamano = $archivo->getSize();
 
-        $hashArchivo = hash_file('sha256', $archivo->getRealPath());
-
-        $documentoExistente = DocumentoRevisionContractual::query()
-            ->where('revision_contractual_id', $revision->id)
-            ->where('hash_archivo', $hashArchivo)
-            ->first();
-
-        if ($documentoExistente) {
-            return redirect()
-                ->route('contractual.revisiones.show', $revision)
-                ->with('error', 'El documento ya fue cargado previamente en esta revisión.');
+        if (!in_array($extension, ['pdf', 'docx'])) {
+            return back()->with('error', 'Formato no soportado. Solo PDF o DOCX.');
         }
 
-        $nombreArchivo = now()->format('YmdHis') . '_' . Str::uuid() . '.' . $extension;
+        $ruta = $archivo->store('contractual/documentos', 'public');
+        $hash = hash_file('sha256', $archivo->getRealPath());
 
-        $ruta = $archivo->storeAs(
-            'contractual/revisiones/' . $revision->id,
-            $nombreArchivo,
-            'public'
-        );
+        $existe = DocumentoRevisionContractual::where('hash_archivo', $hash)->first();
 
-        $textoExtraido = null;
-        $extraccionEstado = 'PENDIENTE';
-        $tieneTextoExtraible = false;
+        if ($existe) {
+            Storage::disk('public')->delete($ruta);
 
-        if ($extension === 'pdf') {
-            $resultadoExtraccion = $extractor->extractFromPublicPath($ruta);
-            $textoExtraido = $resultadoExtraccion['texto'];
-            $extraccionEstado = $resultadoExtraccion['estado'];
-            $tieneTextoExtraible = $resultadoExtraccion['tiene_texto_extraible'];
+            return back()->with('warning', 'El documento ya fue cargado anteriormente y no se duplicó.');
         }
+
+        $resultado = $pipelineService->process($ruta, $extension);
 
         DocumentoRevisionContractual::create([
             'revision_contractual_id' => $revision->id,
-            'nombre_original' => $nombreOriginal,
-            'nombre_archivo' => $nombreArchivo,
+            'nombre_original' => $archivo->getClientOriginalName(),
             'ruta' => $ruta,
-            'mime_type' => $mimeType,
-            'tamano' => $tamano,
+            'mime_type' => $archivo->getClientMimeType(),
             'extension' => $extension,
-            'tipo_documento' => $request->tipo_documento,
-            'hash_archivo' => $hashArchivo,
-            'texto_extraido' => $textoExtraido,
-            'extraccion_estado' => $extraccionEstado,
-            'tiene_texto_extraible' => $tieneTextoExtraible,
-            'es_vigente' => true,
+            'peso_bytes' => $archivo->getSize(),
+            'hash_archivo' => $hash,
+            'tipo_documento' => $request->input('tipo_documento'),
+            'texto_extraido' => $resultado['texto_extraido'],
+            'texto_ocr' => $resultado['texto_ocr'],
+            'extraccion_estado' => $resultado['extraccion_estado'],
+            'ocr_estado' => $resultado['ocr_estado'],
+            'tiene_texto_extraible' => $resultado['tiene_texto_extraible'],
+            'fuente_texto' => $resultado['fuente_texto'],
             'user_id' => auth()->id(),
         ]);
 
-        return redirect()
-            ->route('contractual.revisiones.show', $revision)
-            ->with('success', 'Documento cargado correctamente.');
+        return back()->with('success', $resultado['mensaje']);
     }
 
     public function destroy(RevisionContractual $revision, DocumentoRevisionContractual $documento): RedirectResponse
@@ -93,14 +134,12 @@ class DocumentoRevisionContractualController extends Controller
             abort(404);
         }
 
-        if (!empty($documento->ruta) && Storage::disk('public')->exists($documento->ruta)) {
+        if ($documento->ruta && Storage::disk('public')->exists($documento->ruta)) {
             Storage::disk('public')->delete($documento->ruta);
         }
 
         $documento->delete();
 
-        return redirect()
-            ->route('contractual.revisiones.show', $revision)
-            ->with('success', 'Documento eliminado correctamente.');
+        return back()->with('success', 'Documento eliminado correctamente.');
     }
 }

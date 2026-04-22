@@ -46,9 +46,12 @@ class PromptRevisionContractualBuilderService
     protected function buildDatosRevision(RevisionContractual $revision): string
     {
         $revision->load(['documentos' => function ($q) {
-            $q->where('tiene_texto_extraible', true)
-              ->orderByDesc('id')
-              ->limit(4);
+            $q->where(function ($sub) {
+                $sub->whereNotNull('texto_extraido')
+                    ->orWhereNotNull('texto_ocr');
+            })
+            ->orderByDesc('id')
+            ->limit(6);
         }]);
 
         $documentos = $revision->documentos->map(function ($doc) {
@@ -58,9 +61,10 @@ class PromptRevisionContractualBuilderService
             );
 
             $estadoExtraccion = $doc->extraccion_estado ?: 'PENDIENTE';
+            $textoFuente = $doc->texto_extraido ?: $doc->texto_ocr;
 
-            if ($doc->tiene_texto_extraible && !empty($doc->texto_extraido)) {
-                $texto = trim($doc->texto_extraido);
+            if (!empty($textoFuente)) {
+                $texto = trim($textoFuente);
                 $texto = mb_substr($texto, 0, 8000);
 
                 return <<<TXT
@@ -87,6 +91,9 @@ TXT;
 
         $descripcion = $revision->descripcion ?: 'Sin descripción';
 
+        $contradicciones = app(DocumentContradictionDetectorService::class)->detect($revision);
+        $bloqueContradicciones = $this->buildContradictionBlock($contradicciones);
+
         return <<<TXT
 # DOCUMENTACIÓN A ANALIZAR
 
@@ -98,12 +105,36 @@ TXT;
 ## Documentos disponibles
 {$documentos}
 
+{$bloqueContradicciones}
+
 ## Instrucción final
 Realiza la revisión contractual preliminar aplicando estrictamente las reglas anteriores.
 Aplica jerarquía documental cuando existan contradicciones.
 Trabaja solo con la información disponible.
 Si faltan antecedentes, indícalo expresamente.
 TXT;
+    }
+
+    protected function buildContradictionBlock(array $contradicciones): string
+    {
+        $items = $contradicciones['contradicciones'] ?? [];
+
+        if (empty($items)) {
+            return "## Contradicciones preliminares detectadas\n- No se detectaron contradicciones heurísticas entre documentos.";
+        }
+
+        $lineas = ["## Contradicciones preliminares detectadas"];
+
+        foreach ($items as $item) {
+            $lineas[] = "- Campo: {$item['etiqueta']} | Criticidad: {$item['criticidad']}";
+            $lineas[] = "  Descripción: {$item['descripcion']}";
+            foreach ($item['valores'] as $valor) {
+                $lineas[] = "  * {$valor['documento']}: {$valor['valor']}";
+            }
+            $lineas[] = "  Recomendación: {$item['recomendacion']}";
+        }
+
+        return implode("\n", $lineas);
     }
 
     protected function normalizarTipoDocumento(?string $tipoDocumento, ?string $nombreOriginal): string

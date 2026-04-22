@@ -2,23 +2,15 @@
 
 namespace App\Services\Contractual;
 
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Spatie\PdfToText\Pdf;
 
 class PdfTextExtractorService
 {
-    protected string $pdfToTextBinary = 'C:\\poppler\\Library\\bin\\pdftotext.exe';
-
     public function extractFromPublicPath(string $relativePath): array
     {
         $absolutePath = Storage::disk('public')->path($relativePath);
-
-        \Log::info('Ruta PDF para extracción', [
-            'relativePath' => $relativePath,
-            'absolutePath' => $absolutePath,
-            'exists' => file_exists($absolutePath),
-            'binary' => $this->pdfToTextBinary,
-        ]);
 
         if (!file_exists($absolutePath)) {
             return [
@@ -30,10 +22,9 @@ class PdfTextExtractorService
         }
 
         try {
-            $texto = (new Pdf($this->pdfToTextBinary))
-                ->setPdf($absolutePath)
-                ->text();
+            $binary = (string) config('ocr.pdftotext_binary');
 
+            $texto = Pdf::getText($absolutePath, $binary);
             $texto = is_string($texto) ? trim($texto) : null;
 
             if (!$texto || mb_strlen($texto) < 30) {
@@ -52,8 +43,10 @@ class PdfTextExtractorService
                 'mensaje' => 'Texto extraído correctamente.',
             ];
         } catch (\Throwable $e) {
-            \Log::error('Error extracción PDF', [
-                'archivo' => $absolutePath,
+            Log::error('Error en extracción pdftotext', [
+                'relative_path' => $relativePath,
+                'absolute_path' => $absolutePath,
+                'binary' => config('ocr.pdftotext_binary'),
                 'mensaje' => $e->getMessage(),
             ]);
 
