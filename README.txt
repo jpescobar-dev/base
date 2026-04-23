@@ -1,28 +1,25 @@
-Módulo de reporte profesional contractual
+Evaluación de cierre de revisión
 
 Incluye:
-- RevisionReportService
-- RevisionReportController
-- vista HTML de informe
-- exportación Word compatible vía HTML
-- snippet de rutas
+- RevisionClosureEvaluationService
+- partial Blade para mostrar estado de cierre
+- snippets de integración para snapshot controller, snapshot blade y reporte
 
 Qué hace:
-- integra gate documental
-- resume hallazgos
-- muestra contradicciones con prevalencia
-- incluye checklist por capas
-- exporta a Word descargable
+- clasifica la revisión como apta, observada o no apta
+- usa gate documental, hallazgos, contradicciones y evolución
+- entrega motivos claros y un resumen ejecutivo de cierre
 
-Instalación:
-1. Copiar archivos respetando rutas
-2. Agregar rutas del snippet
-3. Ejecutar:
+Pasos:
+1. Copiar archivos
+2. Integrar snippet en SnapshotRevisionContractualController@show
+3. Incluir partial en snapshot/show.blade.php
+4. Opcional: reflejarlo en el reporte profesional
+5. Ejecutar:
    composer dump-autoload
    php artisan optimize:clear
 
-Requisitos:
-- snapshots funcionando
-- contradicciones con prevalencia
-- gate de aptitud integrado
-- trazabilidad documental disponible
+Resultado:
+- apoyo a decisión final asistida
+- criterio visible de cierre
+- mejor trazabilidad para auditoría y jefatura

@@ -1,0 +1,6 @@
+// EN RevisionReportService::build() o en controller del reporte:
+// agregar al array final:
+'cierre_revision' => $cierreRevision ?? [],
+
+// Y en la vista del reporte mostrar:
+// estado, resumen y motivos de cierre

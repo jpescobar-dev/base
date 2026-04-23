@@ -13,13 +13,14 @@ class RevisionContractual extends Model
     protected $fillable = [
         'titulo',
         'descripcion',
+        'etapa_proceso_contractual',
         'estado_id',
         'user_id',
     ];
 
     public function estado(): BelongsTo
     {
-        return $this->belongsTo(Estado::class);
+        return $this->belongsTo(Estado::class, 'estado_id');
     }
 
     public function usuario(): BelongsTo
@@ -29,13 +30,16 @@ class RevisionContractual extends Model
 
     public function documentos(): HasMany
     {
-        return $this->hasMany(DocumentoRevisionContractual::class, 'revision_contractual_id')
-            ->latest();
+        return $this->hasMany(DocumentoRevisionContractual::class, 'revision_contractual_id')->latest();
     }
 
     public function snapshots(): HasMany
     {
-        return $this->hasMany(SnapshotRevisionContractual::class, 'revision_contractual_id')
-            ->latest();
+        return $this->hasMany(SnapshotRevisionContractual::class, 'revision_contractual_id')->latest();
+    }
+
+    public function tiposDocumentoConfigurados(): HasMany
+    {
+        return $this->hasMany(RevisionTipoDocumento::class, 'revision_contractual_id')->with('tipo');
     }
 }
