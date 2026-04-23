@@ -16,7 +16,7 @@
                             {{ strtoupper($c->criticidad ?? 'media') }}
                         </span>
                         @if($c->documento_preferente)
-                            <span class="badge bg-dark">Preferente: {{ $c->documento_preferente }}</span>
+                            <span class="badge bg-dark">Prevalece: {{ $c->documento_preferente }}</span>
                         @endif
                     </div>
                 </div>
@@ -28,13 +28,41 @@
                     @foreach(($c->valores_detectados ?? []) as $v)
                         <li>
                             <strong>{{ $v['documento'] ?? 'Documento' }}</strong>
-                            @if(!empty($v['tipo_documento']))
-                                <span class="text-muted">({{ $v['tipo_documento'] }})</span>
+                            @if(!empty($v['tipo_documento_nombre']))
+                                <span class="text-muted">({{ $v['tipo_documento_nombre'] }}, peso {{ $v['peso_jerarquico'] ?? 0 }})</span>
                             @endif
                             : {{ $v['valor'] ?? '-' }}
                         </li>
                     @endforeach
                 </ul>
+
+                @php
+                    $motivo = null;
+                    $peso = null;
+                    $valorPrev = null;
+                    if (isset($snapshot->json_resultado['contradicciones_documentales']) && is_array($snapshot->json_resultado['contradicciones_documentales'])) {
+                        foreach ($snapshot->json_resultado['contradicciones_documentales'] as $raw) {
+                            if (($raw['campo'] ?? null) === $c->campo) {
+                                $motivo = $raw['motivo_prevalencia'] ?? null;
+                                $peso = $raw['peso_prevalente'] ?? null;
+                                $valorPrev = $raw['valor_prevalente'] ?? null;
+                                break;
+                            }
+                        }
+                    }
+                @endphp
+
+                @if($motivo)
+                    <p class="mb-1"><strong>Motivo de prevalencia:</strong> {{ $motivo }}</p>
+                @endif
+
+                @if(!is_null($peso))
+                    <p class="mb-1"><strong>Peso prevalente:</strong> {{ $peso }}</p>
+                @endif
+
+                @if(!is_null($valorPrev))
+                    <p class="mb-1"><strong>Valor prevalente:</strong> {{ $valorPrev }}</p>
+                @endif
 
                 <p class="mb-0"><strong>Recomendación:</strong> {{ $c->recomendacion ?: '-' }}</p>
             </div>

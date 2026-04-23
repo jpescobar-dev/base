@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Contractual;
 use App\Http\Controllers\Controller;
 use App\Models\ChecklistRevisionContractual;
 use App\Models\ContradiccionRevisionContractual;
-use App\Models\DocumentoSnapshotRevisionContractual;
 use App\Models\HallazgoRevisionContractual;
 use App\Models\RevisionContractual;
 use App\Models\SnapshotRevisionContractual;
@@ -133,7 +132,7 @@ class AnalisisRevisionContractualController extends Controller
                     'descripcion' => $item['descripcion'] ?? null,
                     'valores_detectados' => $item['valores'] ?? [],
                     'recomendacion' => $item['recomendacion'] ?? null,
-                    'documento_preferente' => $this->resolverDocumentoPreferente($item['valores'] ?? []),
+                    'documento_preferente' => $item['documento_prevalente'] ?? null,
                     'user_id' => auth()->id(),
                 ]);
             }
@@ -172,14 +171,6 @@ class AnalisisRevisionContractualController extends Controller
 
             DB::commit();
 
-            \Log::info('Snapshot IA creado con trazabilidad documental', [
-                'snapshot_id' => $snapshot->id,
-                'revision_id' => $revision->id,
-                'numero_version' => $snapshot->numero_version,
-                'hallazgos_count' => count($jsonFinal['hallazgos'] ?? []),
-                'contradicciones_count' => count($jsonFinal['contradicciones_documentales'] ?? []),
-            ]);
-
             return redirect()
                 ->route('contractual.revisiones.snapshots.show', [$revision, $snapshot])
                 ->with('success', 'Análisis ejecutado y registros generados correctamente.');
@@ -193,33 +184,6 @@ class AnalisisRevisionContractualController extends Controller
 
             return back()->with('error', 'Ocurrió un error al guardar el análisis IA.');
         }
-    }
-
-    protected function resolverDocumentoPreferente(array $valores): ?string
-    {
-        $jerarquia = [
-            'BASES_ADMINISTRATIVAS_GENERALES' => 1,
-            'BASES_ADMINISTRATIVAS_ESPECIALES' => 2,
-            'BASES_TECNICAS' => 3,
-            'RESOLUCION_ADJUDICACION' => 4,
-            'CONTRATO' => 5,
-            'OFERTA_TECNICA' => 6,
-            'OFERTA_ECONOMICA' => 7,
-            'GARANTIA' => 8,
-            'OTRO' => 9,
-        ];
-
-        if (empty($valores)) {
-            return null;
-        }
-
-        usort($valores, function ($a, $b) use ($jerarquia) {
-            $ja = $jerarquia[$a['tipo_documento'] ?? 'OTRO'] ?? 99;
-            $jb = $jerarquia[$b['tipo_documento'] ?? 'OTRO'] ?? 99;
-            return $ja <=> $jb;
-        });
-
-        return $valores[0]['documento'] ?? null;
     }
 
     protected function buildResumenTexto(array $jsonFinal): string

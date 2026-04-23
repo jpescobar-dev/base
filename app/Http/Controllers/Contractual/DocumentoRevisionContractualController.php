@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Contractual\StoreDocumentoRevisionContractualRequest;
 use App\Models\DocumentoRevisionContractual;
 use App\Models\RevisionContractual;
+use App\Models\TipoDocumentoContractual;
 use App\Services\Contractual\DocumentoTextPipelineService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -16,9 +17,10 @@ class DocumentoRevisionContractualController extends Controller
 {
     public function index(RevisionContractual $revision): View
     {
-        $revision->load(['documentos.usuario']);
+        $revision->load(['documentos.usuario', 'documentos.tipoDocumento']);
+        $tipos = TipoDocumentoContractual::where('activo', true)->orderBy('peso_jerarquico')->get();
 
-        return view('contractual.documentos.index', compact('revision'));
+        return view('contractual.documentos.index', compact('revision', 'tipos'));
     }
 
     public function show(RevisionContractual $revision, DocumentoRevisionContractual $documento)
@@ -26,6 +28,8 @@ class DocumentoRevisionContractualController extends Controller
         if ((int) $documento->revision_contractual_id !== (int) $revision->id) {
             abort(404);
         }
+
+        $documento->load(['snapshotsTraza.snapshot', 'snapshotsTraza.usuario', 'tipoDocumento']);
 
         if (!$documento->ruta || !Storage::disk('public')->exists($documento->ruta)) {
             abort(404, 'El archivo no existe en disco.');
@@ -116,6 +120,7 @@ class DocumentoRevisionContractualController extends Controller
             'peso_bytes' => $archivo->getSize(),
             'hash_archivo' => $hash,
             'tipo_documento' => $request->input('tipo_documento'),
+            'tipo_documento_contractual_id' => $request->input('tipo_documento_contractual_id'),
             'texto_extraido' => $resultado['texto_extraido'],
             'texto_ocr' => $resultado['texto_ocr'],
             'extraccion_estado' => $resultado['extraccion_estado'],

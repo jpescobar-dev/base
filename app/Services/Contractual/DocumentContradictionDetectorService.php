@@ -9,8 +9,8 @@ class DocumentContradictionDetectorService
 {
     public function detect(RevisionContractual $revision): array
     {
-        $revision->load(['documentos' => function ($q) {
-            $q->orderBy('id');
+        $revision->load(['documentos.tipoDocumento' => function ($q) {
+            $q->orderBy('peso_jerarquico');
         }]);
 
         $docs = $revision->documentos->map(function ($doc) {
@@ -19,7 +19,10 @@ class DocumentContradictionDetectorService
             return [
                 'id' => $doc->id,
                 'nombre_original' => $doc->nombre_original,
-                'tipo_documento' => $doc->tipo_documento,
+                'tipo_documento' => $doc->tipoDocumento->codigo ?? $doc->tipo_documento ?? 'OTRO',
+                'tipo_documento_nombre' => $doc->tipoDocumento->nombre ?? $doc->tipo_documento ?? 'Otro',
+                'peso_jerarquico' => $doc->tipoDocumento->peso_jerarquico ?? 0,
+                'jerarquia' => $doc->tipoDocumento->jerarquia ?? 'baja',
                 'texto' => $texto,
                 'proveedor' => $this->extractProveedor($texto),
                 'plazo_meses' => $this->extractPlazoMeses($texto),
@@ -62,7 +65,10 @@ class DocumentContradictionDetectorService
                         'documento_id' => $doc['id'],
                         'documento' => $doc['nombre_original'],
                         'tipo_documento' => $doc['tipo_documento'],
+                        'tipo_documento_nombre' => $doc['tipo_documento_nombre'],
                         'valor' => $doc[$campo],
+                        'peso_jerarquico' => $doc['peso_jerarquico'],
+                        'jerarquia' => $doc['jerarquia'],
                     ];
                 })
                 ->values();
@@ -70,18 +76,67 @@ class DocumentContradictionDetectorService
             $unicos = $valores->pluck('valor')->unique()->values();
 
             if ($unicos->count() > 1) {
+                $prevalente = $this->resolvePrevalentDocument($valores);
+
                 $contradicciones[] = [
                     'campo' => $campo,
                     'etiqueta' => $label,
                     'criticidad' => in_array($campo, ['id_licitacion', 'plazo_meses', 'monto_uf', 'garantia_uf']) ? 'alta' : 'media',
                     'descripcion' => "Se detectaron valores distintos para {$label} entre documentos del expediente.",
                     'valores' => $valores->all(),
-                    'recomendacion' => "Verificar {$label} en bases, adjudicación y contrato, y regularizar la inconsistencia documental.",
+                    'documento_prevalente' => $prevalente['documento_prevalente'],
+                    'tipo_documento_prevalente' => $prevalente['tipo_documento_prevalente'],
+                    'peso_prevalente' => $prevalente['peso_prevalente'],
+                    'valor_prevalente' => $prevalente['valor_prevalente'],
+                    'requiere_verificacion_manual' => $prevalente['requiere_verificacion_manual'],
+                    'motivo_prevalencia' => $prevalente['motivo_prevalencia'],
+                    'recomendacion' => $prevalente['recomendacion'],
                 ];
             }
         }
 
         return $contradicciones;
+    }
+
+    protected function resolvePrevalentDocument(Collection $valores): array
+    {
+        $ordenados = $valores->sortByDesc('peso_jerarquico')->values();
+        $primero = $ordenados->get(0);
+        $segundo = $ordenados->get(1);
+
+        if (!$primero) {
+            return [
+                'documento_prevalente' => null,
+                'tipo_documento_prevalente' => null,
+                'peso_prevalente' => null,
+                'valor_prevalente' => null,
+                'requiere_verificacion_manual' => true,
+                'motivo_prevalencia' => 'No fue posible determinar documento prevalente.',
+                'recomendacion' => 'Verificar manualmente la contradicción documental.',
+            ];
+        }
+
+        if ($segundo && (int) $primero['peso_jerarquico'] === (int) $segundo['peso_jerarquico']) {
+            return [
+                'documento_prevalente' => null,
+                'tipo_documento_prevalente' => null,
+                'peso_prevalente' => (int) $primero['peso_jerarquico'],
+                'valor_prevalente' => null,
+                'requiere_verificacion_manual' => true,
+                'motivo_prevalencia' => 'Existen documentos con igual peso jerárquico en conflicto.',
+                'recomendacion' => 'Pendiente de verificar. No es posible establecer prevalencia automática por empate jerárquico.',
+            ];
+        }
+
+        return [
+            'documento_prevalente' => $primero['documento'],
+            'tipo_documento_prevalente' => $primero['tipo_documento_nombre'],
+            'peso_prevalente' => (int) $primero['peso_jerarquico'],
+            'valor_prevalente' => $primero['valor'],
+            'requiere_verificacion_manual' => false,
+            'motivo_prevalencia' => 'Prevalece preliminarmente el documento con mayor peso jerárquico.',
+            'recomendacion' => 'Tomar como referencia preliminar el valor del documento de mayor jerarquía, sin perjuicio de validación jurídica o administrativa.',
+        ];
     }
 
     protected function extractProveedor(string $texto): ?string

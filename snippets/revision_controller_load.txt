@@ -1,0 +1,9 @@
+// EN RevisionContractualController@show AGREGAR:
+use App\Models\TipoDocumentoContractual;
+
+// dentro del método show:
+$tiposDocumentales = TipoDocumentoContractual::where('activo', true)
+    ->orderBy('peso_jerarquico')
+    ->get();
+
+return view('contractual.revisiones.show', compact('revision', 'tiposDocumentales'));

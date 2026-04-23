@@ -1,6 +1,11 @@
-use App\Http\Controllers\Contractual\DocumentoRevisionContractualController;
+use App\Http\Controllers\Contractual\RevisionReportController;
 
-Route::post(
-    'revisiones/{revision}/documentos/{documento}/reprocess',
-    [DocumentoRevisionContractualController::class, 'reprocess']
-)->name('contractual.revisiones.documentos.reprocess');
+Route::get(
+    'revisiones/{revision}/snapshots/{snapshot}/reporte',
+    [RevisionReportController::class, 'show']
+)->name('contractual.revisiones.reportes.show');
+
+Route::get(
+    'revisiones/{revision}/snapshots/{snapshot}/reporte-word',
+    [RevisionReportController::class, 'exportWord']
+)->name('contractual.revisiones.reportes.export-word');

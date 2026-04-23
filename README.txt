@@ -1,45 +1,28 @@
-Trazabilidad documental entre documentos y snapshots
+Módulo de reporte profesional contractual
 
 Incluye:
-- migración pivote documento_snapshot_revision_contractual
-- modelo DocumentoSnapshotRevisionContractual
-- servicio DocumentTraceabilityService
-- AnalisisRevisionContractualController actualizado para registrar trazabilidad
-- vista documento/show con historial de snapshots usados
-- partial para mostrar documentos usados dentro del snapshot
+- RevisionReportService
+- RevisionReportController
+- vista HTML de informe
+- exportación Word compatible vía HTML
+- snippet de rutas
 
-Ajustes manuales adicionales recomendados:
+Qué hace:
+- integra gate documental
+- resume hallazgos
+- muestra contradicciones con prevalencia
+- incluye checklist por capas
+- exporta a Word descargable
 
-1. En DocumentoRevisionContractual model agregar:
-   public function snapshotsTraza()
-   {
-       return $this->hasMany(DocumentoSnapshotRevisionContractual::class, 'documento_revision_contractual_id')
-           ->with(['snapshot', 'usuario'])
-           ->latest();
-   }
+Instalación:
+1. Copiar archivos respetando rutas
+2. Agregar rutas del snippet
+3. Ejecutar:
+   composer dump-autoload
+   php artisan optimize:clear
 
-2. En SnapshotRevisionContractual model agregar:
-   public function documentosTraza()
-   {
-       return $this->hasMany(DocumentoSnapshotRevisionContractual::class, 'snapshot_revision_contractual_id')
-           ->with(['documento', 'usuario'])
-           ->latest();
-   }
-
-3. En DocumentoRevisionContractualController@show cargar:
-   $documento->load(['snapshotsTraza.snapshot', 'snapshotsTraza.usuario']);
-
-4. En SnapshotRevisionContractualController@show cargar:
-   $snapshot->load(['documentosTraza.documento', 'documentosTraza.usuario']);
-
-5. En la vista del snapshot incluir:
-   @include('contractual.snapshots.partials.trazabilidad_documentos')
-
-Pasos:
-- copiar archivos
-- php artisan migrate
-- composer dump-autoload
-- php artisan optimize:clear
-
-Próximo respaldo Git recomendado:
-- después de validar que un snapshot registra correctamente sus documentos usados
+Requisitos:
+- snapshots funcionando
+- contradicciones con prevalencia
+- gate de aptitud integrado
+- trazabilidad documental disponible

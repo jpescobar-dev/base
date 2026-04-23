@@ -1,0 +1,5 @@
+// EN App\Models\RevisionContractual
+public function tiposDocumentoConfigurados()
+{
+    return $this->hasMany(RevisionTipoDocumento::class, 'revision_contractual_id')->with('tipo');
+}

@@ -1,0 +1,6 @@
+// EJEMPLO PARA FILTRAR DOCUMENTOS VÁLIDOS EN EL BUILDER O ANÁLISIS
+$documentosValidos = $revision->documentos
+    ->whereNotNull('tipo_documento_contractual_id')
+    ->filter(function ($doc) {
+        return !empty($doc->texto_extraido) || !empty($doc->texto_ocr);
+    });

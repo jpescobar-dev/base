@@ -1,0 +1,2 @@
+{{-- EN show.blade.php ANTES DEL BOTÓN ANALIZAR --}}
+@include('contractual.revisiones.partials.gate', ['gate' => $gate])
