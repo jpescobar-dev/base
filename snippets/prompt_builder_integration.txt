@@ -1,0 +1,32 @@
+// INTEGRACIÓN SUGERIDA EN PromptRevisionContractualBuilderService.php
+
+use App\Services\Contractual\DocumentContradictionDetectorService;
+
+// Dentro de buildDatosRevision(...)
+$contradicciones = app(DocumentContradictionDetectorService::class)->detect($revision);
+$bloqueContradicciones = $this->buildContradictionBlock($contradicciones);
+
+// En el return final
+return $contenidoBase . "\n\n" . $datosRevision . "\n\n" . $bloqueContradicciones;
+
+// Método auxiliar sugerido
+protected function buildContradictionBlock(array $contradicciones): string
+{
+    $items = $contradicciones['contradicciones'] ?? [];
+
+    if (empty($items)) {
+        return "## Contradicciones preliminares detectadas\n- No se detectaron contradicciones heurísticas entre documentos.";
+    }
+
+    $lineas = ["## Contradicciones preliminares detectadas"];
+
+    foreach ($items as $item) {
+        $lineas[] = "- Campo: {$item['etiqueta']} | Criticidad: {$item['criticidad']}";
+        $lineas[] = "  Descripción: {$item['descripcion']}";
+        foreach ($item['valores'] as $valor) {
+            $lineas[] = "  * {$valor['documento']}: {$valor['valor']}";
+        }
+    }
+
+    return implode("\n", $lineas);
+}

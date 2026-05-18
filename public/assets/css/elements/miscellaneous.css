@@ -9,10 +9,8 @@
 	===============================
 */
 .jumbotron p {
-  text-align: left;
-}
+  text-align: left; }
 
 .display-4 {
   word-wrap: break-word;
-  font-size: 45px;
-}
+  font-size: 45px; }

@@ -1,0 +1,9 @@
+// EN AnalisisRevisionContractualController@store
+
+use App\Services\Contractual\RevisionAnalysisGateService;
+
+$gate = app(RevisionAnalysisGateService::class)->evaluate($revision);
+
+if ($gate['estado'] !== 'apto') {
+    return back()->with('error', 'No es posible ejecutar el análisis. Revise los requisitos documentales.');
+}

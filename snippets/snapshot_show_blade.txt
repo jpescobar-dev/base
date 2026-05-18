@@ -1,0 +1,2 @@
+{{-- EN resources/views/contractual/snapshots/show.blade.php --}}
+@include('contractual.snapshots.partials.cierre_revision', ['cierreRevision' => $cierreRevision])

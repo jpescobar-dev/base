@@ -1,0 +1,10 @@
+Revisar en App\Models\SnapshotRevisionContractual.php:
+
+protected $casts = [
+    'json_resultado' => 'array',
+    'es_actual' => 'boolean',
+];
+
+Y confirmar relaciones:
+- hallazgos()
+- checklist()

@@ -1,0 +1,13 @@
+use App\Http\Controllers\Contractual\DocumentoRevisionContractualController;
+
+Route::get('revisiones/{revision}/documentos', [DocumentoRevisionContractualController::class, 'index'])
+    ->name('contractual.revisiones.documentos.index');
+
+Route::get('revisiones/{revision}/documentos/{documento}', [DocumentoRevisionContractualController::class, 'show'])
+    ->name('contractual.revisiones.documentos.show');
+
+Route::post('revisiones/{revision}/documentos', [DocumentoRevisionContractualController::class, 'store'])
+    ->name('contractual.revisiones.documentos.store');
+
+Route::delete('revisiones/{revision}/documentos/{documento}', [DocumentoRevisionContractualController::class, 'destroy'])
+    ->name('contractual.revisiones.documentos.destroy');

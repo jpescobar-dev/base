@@ -1,0 +1,4 @@
+<a href="{{ route('contractual.revisiones.snapshots.compare.export-word', [$revision, $snapshot1, $snapshot2]) }}"
+   class="btn btn-outline-primary">
+    Exportar comparación Word
+</a>

@@ -1,0 +1,7 @@
+Verificar en Tinker:
+
+php artisan tinker
+
+App\Models\SnapshotRevisionContractual::whereIn('tipo_ejecucion', ['openai', 'openai_debug'])
+    ->latest()
+    ->first(['id', 'numero_version', 'tipo_ejecucion', 'json_resultado']);

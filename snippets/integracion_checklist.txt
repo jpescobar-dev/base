@@ -1,0 +1,7 @@
+// DESPUÉS DE GENERAR CHECKLIST DESDE IA
+
+use App\Services\Contractual\EtapaAwareChecklistService;
+
+$checklistService = app(EtapaAwareChecklistService::class);
+
+$checklistAjustado = $checklistService->ajustar($checklist, $revision->etapa_proceso_contractual);

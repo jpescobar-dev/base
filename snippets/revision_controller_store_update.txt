@@ -1,0 +1,7 @@
+// EN RevisionContractualController
+
+// VALIDAR en store/update:
+'etapa_proceso_contractual' => ['required', 'in:pre_adjudicacion,adjudicado_sin_contrato,contratado,en_ejecucion'],
+
+// GUARDAR:
+'etapa_proceso_contractual' => $request->input('etapa_proceso_contractual'),

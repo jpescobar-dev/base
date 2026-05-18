@@ -1,0 +1,16 @@
+// EN SnapshotRevisionContractualController@show
+
+use App\Services\Contractual\RevisionClosureEvaluationService;
+
+// después de obtener $gate y $evolucion
+$cierreRevision = app(RevisionClosureEvaluationService::class)
+    ->evaluate($snapshot, $gate ?? [], $evolucion ?? []);
+
+return view('contractual.snapshots.show', compact(
+    'revision',
+    'snapshot',
+    'anterior',
+    'evolucion',
+    'gate',
+    'cierreRevision'
+));

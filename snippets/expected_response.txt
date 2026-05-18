@@ -1,0 +1,9 @@
+Resultado esperado:
+
+- Se crea un nuevo snapshot
+- tipo_ejecucion = openai_debug
+- json_resultado contiene el texto útil del análisis
+- es_actual = true
+
+Si output.0.content.0.text no existe:
+- se guarda el JSON completo de la respuesta como respaldo

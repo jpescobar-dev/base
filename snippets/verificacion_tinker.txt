@@ -1,0 +1,20 @@
+Después de actualizar el archivo de formato de salida:
+
+1. Ejecutar:
+   php artisan optimize:clear
+
+2. Volver a correr "Analizar con IA"
+
+3. Verificar en Tinker:
+   php artisan tinker
+
+   App\Models\SnapshotRevisionContractual::whereIn('tipo_ejecucion', ['openai', 'openai_debug'])
+       ->latest()
+       ->first(['id', 'numero_version', 'tipo_ejecucion', 'json_resultado']);
+
+Resultado esperado:
+- json_resultado ya no debe venir como informe markdown largo
+- debe venir como JSON estructurado con:
+  - resumen
+  - hallazgos
+  - checklist

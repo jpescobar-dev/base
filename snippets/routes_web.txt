@@ -1,0 +1,11 @@
+use App\Http\Controllers\Contractual\RevisionReportController;
+
+Route::get(
+    'revisiones/{revision}/snapshots/{snapshot}/reporte',
+    [RevisionReportController::class, 'show']
+)->name('contractual.revisiones.reportes.show');
+
+Route::get(
+    'revisiones/{revision}/snapshots/{snapshot}/reporte-word',
+    [RevisionReportController::class, 'exportWord']
+)->name('contractual.revisiones.reportes.export-word');

@@ -1,0 +1,9 @@
+// EJEMPLO DE USO EN AnalisisRevisionContractualController ANTES DE EJECUTAR IA
+
+use App\Services\Contractual\RevisionDocumentRequirementValidatorService;
+
+$validacion = app(RevisionDocumentRequirementValidatorService::class)->validate($revision);
+
+if (!$validacion['valido']) {
+    return back()->with('error', implode(' ', $validacion['errores']));
+}

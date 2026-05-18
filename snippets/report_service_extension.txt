@@ -1,0 +1,6 @@
+// EN RevisionReportService::build()
+
+// agregar dentro del array de retorno:
+'evolucion' => $evolucion ?? [],
+
+// y pasar $evolucion desde controller si quieres reflejarlo en el reporte

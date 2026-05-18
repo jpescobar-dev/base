@@ -1,0 +1,7 @@
+// EN PromptRevisionContractualBuilderService
+
+use App\Services\Contractual\EtapaAwarePromptRulesService;
+
+$reglasEtapa = app(EtapaAwarePromptRulesService::class)->reglas($revision->etapa_proceso_contractual);
+
+$bloques[] = "## REGLAS SEGÚN ETAPA\n" . $reglasEtapa;
